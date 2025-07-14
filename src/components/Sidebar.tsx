@@ -14,6 +14,7 @@ export default function Sidebar() {
   const items = [
     { label: "Inicio", icon: Home, path: "/" },
     { label: "Casos", icon: Folder, path: "/cases" },
+    { label: "Clientes", icon: Folder, path: "/clients" },
   ];
 
   return (

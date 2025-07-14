@@ -43,7 +43,7 @@ export function useCases() {
   }, [getToken]);
 
   const createCase = useCallback(
-    async (title: string, description: string) => {
+    async (title: string, description: string, clientId: number) => {
       const token = await getToken();
       const res = await fetch("http://localhost:8080/api/cases", {
         method: "POST",
@@ -51,7 +51,7 @@ export function useCases() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ title, description, status: "OPEN" }),
+        body: JSON.stringify({ title, description, status: "OPEN", clientId }),
       });
       if (!res.ok) throw new Error("Error al crear el caso");
       await fetchCases();
