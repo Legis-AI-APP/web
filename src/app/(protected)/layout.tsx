@@ -1,7 +1,8 @@
 "use client";
 
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/hooks/use-auth";
 import { Loader } from "lucide-react";
+import Sidebar from "@/components/Sidebar";
 
 export default function ProtectedLayout({
   children,
@@ -18,5 +19,10 @@ export default function ProtectedLayout({
     );
   }
 
-  return <>{children}</>;
+  return (
+    <div className="flex min-h-screen">
+      <Sidebar />
+      <main className="flex-1 p-6">{children}</main>
+    </div>
+  );
 }

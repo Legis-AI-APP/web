@@ -1,20 +1,54 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useAuth } from "@/lib/useAuth";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
+import { useState, useRef, useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { useState } from "react";
+import { askGeminiStream } from "@/lib/ask-gemini-stream";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { Loader } from "lucide-react";
-import { askGeminiStream } from "@/lib/askGeminiStream";
 
 export default function Home() {
   const { user } = useAuth();
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const bufferRef = useRef<string[]>([]);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      const next = bufferRef.current.shift();
+      if (next) setAnswer((prev) => prev + next);
+    }, 15);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  const handleAsk = async () => {
+    if (!question.trim()) return;
+
+    setLoading(true);
+    setAnswer("");
+    bufferRef.current = [];
+
+    try {
+      await askGeminiStream(question, (chunk) => {
+        bufferRef.current.push(...chunk);
+      });
+    } catch (err: any) {
+      toast.error(err.message || "Error al pedir respuesta a la IA");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -26,57 +60,37 @@ export default function Home() {
     }
   };
 
-  const handleAsk = async () => {
-    if (!question.trim()) return;
-
-    setLoading(true);
-    setAnswer("");
-
-    try {
-      await askGeminiStream(question, async (chunk) => {
-        for (const char of chunk) {
-          await new Promise((res) => setTimeout(res, 15)); // velocidad del efecto
-          setAnswer((prev) => prev + char);
-        }
-      });
-    } catch (err: any) {
-      toast.error(err.message || "Error al pedir respuesta a la IA");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <main className="p-6 min-h-screen flex flex-col items-center justify-center gap-6">
-      <h1 className="text-2xl font-bold text-center">
+    <div className="max-w-xl mx-auto space-y-6">
+      <h1 className="text-3xl font-bold text-center">
         Bienvenido/a {user?.email?.split("@")[0]}
       </h1>
 
-      <input
-        type="text"
-        placeholder="¿Qué vamos a hacer hoy?"
-        value={question}
-        onChange={(e) => setQuestion(e.target.value)}
-        className="w-full max-w-md px-4 py-3 rounded-xl border border-muted bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-      />
+      <Card>
+        <CardContent className="pt-6 space-y-4">
+          <Input
+            placeholder="¿Qué vamos a hacer hoy?"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+          />
+          <Button onClick={handleAsk} disabled={loading} className="w-full">
+            {loading ? (
+              <Loader className="animate-spin w-4 h-4" />
+            ) : (
+              "Preguntar a la IA"
+            )}
+          </Button>
+          {answer && (
+            <div className="text-sm text-muted-foreground whitespace-pre-wrap min-h-[120px]">
+              {answer}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-      <Button onClick={handleAsk} disabled={loading}>
-        {loading ? (
-          <Loader className="animate-spin w-4 h-4" />
-        ) : (
-          "Preguntar a la IA"
-        )}
-      </Button>
-
-      {answer && (
-        <div className="w-full max-w-md bg-muted p-4 rounded-lg text-sm whitespace-pre-wrap min-h-[120px]">
-          {answer}
-        </div>
-      )}
-
-      <Button variant="ghost" onClick={handleLogout}>
+      <Button variant="ghost" onClick={handleLogout} className="w-full">
         Cerrar sesión
       </Button>
-    </main>
+    </div>
   );
 }

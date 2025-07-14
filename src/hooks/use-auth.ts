@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { useRouter, usePathname } from "next/navigation";
-import { auth } from "./firebase";
+import { auth } from "@/lib/firebase";
 
 export function useAuth(protectedRoute = false) {
   const [user, setUser] = useState<User | null | undefined>(undefined);
