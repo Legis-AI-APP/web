@@ -41,7 +41,7 @@ export default function Home() {
 
     try {
       await askGeminiStream(question, (chunk) => {
-        bufferRef.current.push(...chunk);
+        bufferRef.current.push(chunk);
       });
     } catch (err: any) {
       toast.error(err.message || "Error al pedir respuesta a la IA");
@@ -81,9 +81,9 @@ export default function Home() {
             )}
           </Button>
           {answer && (
-            <div className="text-sm text-muted-foreground whitespace-pre-wrap min-h-[120px]">
+            <pre className="text-sm text-muted-foreground whitespace-pre-wrap min-h-[120px]">
               {answer}
-            </div>
+            </pre>
           )}
         </CardContent>
       </Card>

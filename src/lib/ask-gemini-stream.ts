@@ -26,33 +26,31 @@ export async function askGeminiStream(
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder("utf-8");
-
-  let partial = "";
+  let buffer = "";
 
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
 
-    const chunk = decoder.decode(value, { stream: true });
-    partial += chunk;
-
-    const lines = partial.split("\n");
-    partial = lines.pop() ?? "";
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
 
     for (const line of lines) {
       if (line.startsWith("data:")) {
-        const content = line.replace(/^data:\s?/, "");
-        if (content.trim()) {
+        const content = line.slice(5);
+
+        if (content === "") {
+          onMessage("\n");
+        } else {
           onMessage(content);
         }
       }
     }
   }
 
-  if (partial.startsWith("data:")) {
-    const content = partial.replace(/^data:\s?/, "");
-    if (content.trim()) {
-      onMessage(content);
-    }
+  if (buffer.startsWith("data:")) {
+    const content = buffer.slice(5);
+    onMessage(content === "" ? "\n" : content);
   }
 }
