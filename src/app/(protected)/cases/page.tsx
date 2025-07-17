@@ -5,7 +5,10 @@ import { getClients } from "@/lib/clients-service";
 
 export default async function Page() {
   const headersList = await headers();
-  const cases = await getCases(headersList);
-  const clients = await getClients(headersList);
+  const result = await Promise.all([
+    getCases(headersList),
+    getClients(headersList),
+  ]);
+  const [cases, clients] = result;
   return <CasesPage cases={cases} clients={clients} />;
 }
