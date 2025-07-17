@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowUpIcon } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
-export default function Home({ user }: { user: { email?: string } | null }) {
+export default function Home() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
@@ -62,7 +62,7 @@ export default function Home({ user }: { user: { email?: string } | null }) {
             className="flex flex-1 flex-col items-center justify-center text-center"
           >
             <h1 className="text-3xl font-semibold text-muted-foreground mb-6">
-              Bienvenido/a {user?.email?.split("@")[0]}
+              Bienvenido/a
             </h1>
             <motion.div
               initial={{ y: 0 }}

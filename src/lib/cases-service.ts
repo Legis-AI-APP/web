@@ -44,7 +44,7 @@ export const createCase = async (
   return response.json() as Promise<Case>;
 };
 
-export const getFiles = async (caseId: number, headers: ReadonlyHeaders) => {
+export const getFiles = async (caseId: string, headers: ReadonlyHeaders) => {
   const cookieHeader = headers.get("cookie") || "";
   const response = await fetch(`${apiUrl}/api/cases/${caseId}/files`, {
     headers: {
