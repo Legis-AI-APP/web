@@ -4,17 +4,14 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-} from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, provider } from "@/lib/firebase";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { login } from "@/lib/auth-service";
 
 export default function AuthCard({ type }: { type: "login" | "register" }) {
   const [email, setEmail] = useState("");
@@ -53,7 +50,7 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
 
     try {
       if (type === "login") {
-        await signInWithEmailAndPassword(auth, email, password);
+        await login(email, password);
         toast.success("Sesión iniciada con éxito");
       } else {
         await createUserWithEmailAndPassword(auth, email, password);

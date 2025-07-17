@@ -1,22 +1,17 @@
-"use client";
-
-import { useAuth } from "@/hooks/use-auth";
-import { Loader } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-export default function ProtectedLayout({
+export default async function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { loading } = useAuth(true);
+  const cookieStore = await cookies();
+  const session = cookieStore.get("session")?.value;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+  if (!session) {
+    redirect("/login");
   }
 
   return (

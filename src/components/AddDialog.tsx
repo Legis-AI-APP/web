@@ -13,15 +13,19 @@ type AddDialogProps = {
   title: string;
   children: ReactNode;
   triggerText?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 export function AddDialog({
   title,
   children,
   triggerText = "Add",
+  open,
+  onOpenChange,
 }: AddDialogProps) {
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button variant="default" size="sm">
           <Plus className="w-4 h-4 mr-1" />

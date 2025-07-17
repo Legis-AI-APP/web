@@ -7,9 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Folder, Home, Menu, LogOut } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
+import { logout } from "@/lib/auth-service";
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(true);
@@ -24,7 +23,7 @@ export default function Sidebar() {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      await logout();
       toast.success("Sesión cerrada correctamente");
     } catch (err: any) {
       toast.error("No se pudo cerrar la sesión");

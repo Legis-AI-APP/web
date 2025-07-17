@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useAuth } from "@/hooks/use-auth";
 import { useState, useRef, useEffect } from "react";
 import { askGeminiStream } from "@/lib/ask-gemini-stream";
 import { toast } from "sonner";
@@ -10,8 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowUpIcon } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
-export default function Home() {
-  const { user } = useAuth();
+export default function Home({ user }: { user: { email?: string } | null }) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
