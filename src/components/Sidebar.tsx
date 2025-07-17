@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { logout } from "@/lib/auth-service";
 
 export default function Sidebar() {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 

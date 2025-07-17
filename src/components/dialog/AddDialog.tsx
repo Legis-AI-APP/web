@@ -15,6 +15,7 @@ type AddDialogProps = {
   triggerText?: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  variant?: "default" | "outline";
 };
 
 export function AddDialog({
@@ -23,11 +24,12 @@ export function AddDialog({
   triggerText = "Add",
   open,
   onOpenChange,
+  variant = "default",
 }: AddDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="default" size="sm">
+        <Button variant={variant} size="sm">
           <Plus className="w-4 h-4 mr-1" />
           {triggerText}
         </Button>

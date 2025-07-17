@@ -1,0 +1,126 @@
+"use client";
+
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Loader } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import { AddDialog } from "@/components/dialog/AddDialog";
+import AddClientDialog from "@/components/dialog/AddClientDialog";
+import { Case, createCase } from "@/lib/cases-service";
+import { Client } from "@/lib/clients-service";
+import { useRouter } from "next/navigation";
+
+export default function AddCaseDialog({ clients }: { clients: Client[] }) {
+  const router = useRouter();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [newCase, setNewCase] = useState<
+    Omit<Case, "id" | "createdDate" | "updatedDate" | "status">
+  >({
+    title: "",
+    description: "",
+    clientId: "",
+  });
+
+  const handleSubmit = async () => {
+    if (!newCase.title.trim() || !newCase.description.trim() || !selectedClient)
+      return;
+    setLoading(true);
+    await createCase(newCase);
+    setNewCase({ title: "", description: "", clientId: "" });
+    setSelectedClient(null);
+    setLoading(false);
+    setDialogOpen(false);
+    router.refresh();
+  };
+
+  return (
+    <AddDialog
+      title="Crear caso"
+      triggerText="Nuevo caso"
+      open={dialogOpen}
+      onOpenChange={setDialogOpen}
+    >
+      <div className="space-y-4">
+        <Input
+          placeholder="Título"
+          value={newCase.title}
+          onChange={(e) =>
+            setNewCase((prev) => ({ ...prev, title: e.target.value }))
+          }
+        />
+        <Textarea
+          placeholder="Descripción"
+          value={newCase.description}
+          onChange={(e) =>
+            setNewCase((prev) => ({ ...prev, description: e.target.value }))
+          }
+        />
+        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              className="w-full justify-between"
+            >
+              {selectedClient ? selectedClient.name : "Seleccionar cliente"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="w-[var(--radix-popover-trigger-width)] p-0"
+            align="start"
+          >
+            <Command>
+              <div className="p-2 border-b">
+                <AddClientDialog
+                  triggerText="Nuevo cliente"
+                  onClientCreated={() => router.refresh()}
+                  variant="outline"
+                />
+              </div>
+              <CommandInput placeholder="Buscar cliente..." />
+              <CommandEmpty>No se encontró ningún cliente</CommandEmpty>
+              <CommandGroup>
+                {clients.map((client) => (
+                  <CommandItem
+                    key={client.id}
+                    value={client.name}
+                    onSelect={() => {
+                      setSelectedClient(client);
+                      setNewCase((prev) => ({
+                        ...prev,
+                        clientId: client.id,
+                      }));
+                      setPopoverOpen(false);
+                    }}
+                  >
+                    {client.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </Command>
+          </PopoverContent>
+        </Popover>
+
+        <Button onClick={handleSubmit} disabled={loading} className="w-full">
+          {loading ? <Loader className="animate-spin w-4 h-4" /> : "Crear caso"}
+        </Button>
+      </div>
+    </AddDialog>
+  );
+}

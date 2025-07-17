@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { login } from "@/lib/auth-service";
+import { Loader } from "lucide-react";
 
 export default function AuthCard({ type }: { type: "login" | "register" }) {
   const [email, setEmail] = useState("");
@@ -23,6 +24,7 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
     confirm?: string;
   }>({});
   const [formTouched, setFormTouched] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const isFilled =
@@ -48,6 +50,7 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
     setFormTouched(true);
     if (!validate()) return;
 
+    setLoading(true);
     try {
       if (type === "login") {
         await login(email, password);
@@ -56,10 +59,12 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
         await createUserWithEmailAndPassword(auth, email, password);
         toast.success("Cuenta creada con éxito");
       }
-      router.push("/"); // Redirige al home después del login
+      router.push("/");
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Error al autenticar");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -148,8 +153,18 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
             </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={!isFilled}>
-            {type === "login" ? "Entrar" : "Crear cuenta"}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={!isFilled || loading}
+          >
+            {loading ? (
+              <Loader className="w-4 h-4 animate-spin" />
+            ) : type === "login" ? (
+              "Entrar"
+            ) : (
+              "Crear cuenta"
+            )}
           </Button>
         </form>
 

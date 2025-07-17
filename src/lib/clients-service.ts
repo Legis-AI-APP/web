@@ -2,7 +2,7 @@ import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/he
 import { apiUrl } from "./api";
 
 export interface Client {
-  id: number;
+  id: string;
   name: string;
   email: string;
   document: string;
@@ -20,7 +20,7 @@ export const getClients = async (headers: ReadonlyHeaders) => {
   return response.json() as Promise<Client[]>;
 };
 
-export const createClient = async (client: Client) => {
+export const createClient = async (client: Omit<Client, "id">) => {
   const response = await fetch(`${apiUrl}/api/clients`, {
     method: "POST",
     headers: {

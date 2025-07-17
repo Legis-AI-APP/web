@@ -1,33 +1,40 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader } from "lucide-react";
 import AppBar from "@/components/layout/AppBar";
-import { AddDialog } from "@/components/AddDialog";
-import { CaseFile, uploadFile } from "@/lib/cases-service";
+import { AddDialog } from "@/components/dialog/AddDialog";
+import { Case, CaseFile, uploadFile } from "@/lib/cases-service";
+import { useRouter } from "next/navigation";
 
-export default function CasePage({ files }: { files: CaseFile[] }) {
-  const { caseId } = useParams();
+export default function CasePage({
+  oldCase,
+  files,
+}: {
+  oldCase: Case;
+  files: CaseFile[];
+}) {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const router = useRouter();
 
   const handleUpload = async () => {
     if (file) {
       setUploading(true);
-      await uploadFile(caseId as string, file);
+      await uploadFile(oldCase.id, file);
       setUploading(false);
       setFile(null);
+      router.refresh();
     }
   };
 
   return (
     <div className="space-y-6">
       <AppBar
-        title={`Caso ${caseId}`}
+        title={`${oldCase.title}`}
         actions={
           <AddDialog title="Subir archivo" triggerText="Subir archivo">
             <div className="space-y-4">

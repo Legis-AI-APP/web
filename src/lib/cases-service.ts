@@ -2,12 +2,13 @@ import { apiUrl } from "./api";
 import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
 
 export interface Case {
-  id: number;
+  id: string;
   title: string;
   description: string;
   status: string;
   createdDate: string;
   updatedDate: string;
+  clientId: string;
 }
 
 export type CaseFile = {
@@ -27,10 +28,19 @@ export const getCases = async (headers: ReadonlyHeaders) => {
   return data as Case[];
 };
 
+export const getCase = async (caseId: string, headers: ReadonlyHeaders) => {
+  const cookieHeader = headers.get("cookie") || "";
+  const response = await fetch(`${apiUrl}/api/cases/${caseId}`, {
+    headers: {
+      Cookie: cookieHeader,
+    },
+  });
+  if (!response.ok) throw new Error(await response.json());
+  return response.json() as Promise<Case>;
+};
+
 export const createCase = async (
-  title: string,
-  description: string,
-  clientId: number
+  data: Omit<Case, "id" | "createdDate" | "updatedDate" | "status">
 ) => {
   const response = await fetch(`${apiUrl}/api/cases`, {
     method: "POST",
@@ -38,7 +48,7 @@ export const createCase = async (
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ title, description, status: "OPEN", clientId }),
+    body: JSON.stringify(data),
   });
   if (!response.ok) throw new Error(await response.json());
   return response.json() as Promise<Case>;
