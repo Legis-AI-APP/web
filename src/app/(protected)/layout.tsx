@@ -22,7 +22,9 @@ export default function ProtectedLayout({
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 p-6">{children}</main>
+      <main className="flex flex-col flex-1 p-6 max-h-screen overflow-hidden">
+        {children}
+      </main>
     </div>
   );
 }

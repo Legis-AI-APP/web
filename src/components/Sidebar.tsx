@@ -1,10 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Folder, Home, Menu } from "lucide-react";
+import { Folder, Home, Menu, LogOut } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { toast } from "sonner";
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(true);
@@ -17,34 +22,54 @@ export default function Sidebar() {
     { label: "Clientes", icon: Folder, path: "/clients" },
   ];
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast.success("Sesión cerrada correctamente");
+    } catch (err: any) {
+      toast.error("No se pudo cerrar la sesión");
+    }
+  };
+
   return (
     <aside
       className={cn(
-        "bg-muted h-screen p-2 border-r transition-all duration-300 ease-in-out",
+        "bg-muted h-screen p-2 border-r flex flex-col justify-between transition-all duration-300 ease-in-out",
         expanded ? "w-[200px]" : "w-[60px]"
       )}
     >
+      <div>
+        <Button
+          variant="ghost"
+          className="w-full mb-4"
+          onClick={() => setExpanded(!expanded)}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+
+        <div className="flex flex-col gap-2">
+          {items.map(({ label, icon: Icon, path }) => (
+            <Button
+              key={path}
+              onClick={() => router.push(path)}
+              variant={pathname === path ? "default" : "ghost"}
+              className="justify-start w-full"
+            >
+              <Icon className="mr-2 h-4 w-4" />
+              {expanded && label}
+            </Button>
+          ))}
+        </div>
+      </div>
+
       <Button
         variant="ghost"
-        className="w-full mb-4"
-        onClick={() => setExpanded(!expanded)}
+        onClick={handleLogout}
+        className="w-full justify-start mt-4 text-sm"
       >
-        <Menu className="h-5 w-5" />
+        <LogOut className="h-4 w-4 mr-2" />
+        {expanded && "Cerrar sesión"}
       </Button>
-
-      <div className="flex flex-col gap-2">
-        {items.map(({ label, icon: Icon, path }) => (
-          <Button
-            key={path}
-            onClick={() => router.push(path)}
-            variant={pathname === path ? "default" : "ghost"}
-            className="justify-start w-full"
-          >
-            <Icon className="mr-2 h-4 w-4" />
-            {expanded && label}
-          </Button>
-        ))}
-      </div>
     </aside>
   );
 }

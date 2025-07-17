@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useClients, ClientDTO } from "@/hooks/use-clients";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader } from "lucide-react";
-import { useClients, ClientDTO } from "@/hooks/use-clients";
+import AppBar from "@/components/layout/AppBar";
+import { AddDialog } from "@/components/AddDialog";
 
 export default function ClientsPage() {
   const { clients, loading, createClient } = useClients();
@@ -23,41 +25,51 @@ export default function ClientsPage() {
   };
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-center">Gestión de Clientes</h1>
-
-      <Card>
-        <CardContent className="pt-6 space-y-4">
-          <Input
-            placeholder="Nombre"
-            value={newClient.name}
-            onChange={(e) =>
-              setNewClient((prev) => ({ ...prev, name: e.target.value }))
-            }
-          />
-          <Input
-            placeholder="Email"
-            value={newClient.email}
-            onChange={(e) =>
-              setNewClient((prev) => ({ ...prev, email: e.target.value }))
-            }
-          />
-          <Input
-            placeholder="Documento"
-            value={newClient.document}
-            onChange={(e) =>
-              setNewClient((prev) => ({ ...prev, document: e.target.value }))
-            }
-          />
-          <Button onClick={handleCreate} disabled={loading} className="w-full">
-            {loading ? (
-              <Loader className="animate-spin w-4 h-4" />
-            ) : (
-              "Crear Cliente"
-            )}
-          </Button>
-        </CardContent>
-      </Card>
+    <div className="space-y-6">
+      <AppBar
+        title="Clientes"
+        actions={
+          <AddDialog title="Crear cliente" triggerText="Nuevo cliente">
+            <div className="space-y-4">
+              <Input
+                placeholder="Nombre"
+                value={newClient.name}
+                onChange={(e) =>
+                  setNewClient((prev) => ({ ...prev, name: e.target.value }))
+                }
+              />
+              <Input
+                placeholder="Email"
+                value={newClient.email}
+                onChange={(e) =>
+                  setNewClient((prev) => ({ ...prev, email: e.target.value }))
+                }
+              />
+              <Input
+                placeholder="Documento"
+                value={newClient.document}
+                onChange={(e) =>
+                  setNewClient((prev) => ({
+                    ...prev,
+                    document: e.target.value,
+                  }))
+                }
+              />
+              <Button
+                onClick={handleCreate}
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? (
+                  <Loader className="animate-spin w-4 h-4" />
+                ) : (
+                  "Crear cliente"
+                )}
+              </Button>
+            </div>
+          </AddDialog>
+        }
+      />
 
       <div className="space-y-2">
         {clients.map((c, i) => (

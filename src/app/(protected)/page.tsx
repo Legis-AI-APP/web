@@ -1,22 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useState, useRef, useEffect } from "react";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import { askGeminiStream } from "@/lib/ask-gemini-stream";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader } from "lucide-react";
+import { ArrowUpIcon } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function Home() {
   const { user } = useAuth();
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
+  const [hasAsked, setHasAsked] = useState(false);
 
   const bufferRef = useRef<string[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -35,6 +34,7 @@ export default function Home() {
   const handleAsk = async () => {
     if (!question.trim()) return;
 
+    setHasAsked(true);
     setLoading(true);
     setAnswer("");
     bufferRef.current = [];
@@ -50,47 +50,109 @@ export default function Home() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      toast.success("Sesión cerrada correctamente");
-    } catch (err: any) {
-      console.error(err);
-      toast.error("No se pudo cerrar la sesión");
-    }
-  };
-
   return (
-    <div className="max-w-xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold text-center">
-        Bienvenido/a {user?.email?.split("@")[0]}
-      </h1>
+    <div className="flex flex-col h-full w-full max-w-4xl mx-auto relative">
+      <AnimatePresence mode="wait">
+        {!hasAsked && (
+          <motion.div
+            key="welcome"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.4 }}
+            className="flex flex-1 flex-col items-center justify-center text-center"
+          >
+            <h1 className="text-3xl font-semibold text-muted-foreground mb-6">
+              Bienvenido/a {user?.email?.split("@")[0]}
+            </h1>
+            <motion.div
+              initial={{ y: 0 }}
+              animate={{ y: 0 }}
+              exit={{ y: 100, opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="w-full max-w-xl mx-auto"
+            >
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAsk();
+                }}
+                className="flex items-center rounded-full px-4 py-2 border bg-transparent"
+              >
+                <Input
+                  placeholder="¿Qué vamos a hacer hoy?"
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  className="flex-1 border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent py-3"
+                />
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="rounded-full w-10 h-10 p-2 ml-2"
+                >
+                  <ArrowUpIcon className="w-5 h-5" />
+                </Button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <Card>
-        <CardContent className="pt-6 space-y-4">
-          <Input
-            placeholder="¿Qué vamos a hacer hoy?"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-          />
-          <Button onClick={handleAsk} disabled={loading} className="w-full">
-            {loading ? (
-              <Loader className="animate-spin w-4 h-4" />
-            ) : (
-              "Preguntar a la IA"
-            )}
-          </Button>
-          {answer && (
-            <pre className="text-sm text-muted-foreground whitespace-pre-wrap min-h-[120px]">
-              {answer}
-            </pre>
-          )}
-        </CardContent>
-      </Card>
+      {hasAsked && (
+        <>
+          <div className="flex-1 overflow-y-auto space-y-4 pb-32">
+            <AnimatePresence>
+              {answer && (
+                <motion.div
+                  key={answer}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card className="rounded-xl border-none shadow-none bg-transparent">
+                    <CardContent className="pt-0 text-sm whitespace-pre-wrap text-muted-foreground">
+                      {answer}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-      <Button variant="ghost" onClick={handleLogout} className="w-full">
-        Cerrar sesión
-      </Button>
+          <motion.div
+            key="input"
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            className="sticky bottom-0 left-0 w-full bg-transparent z-10"
+          >
+            <div className="w-full max-w-xl mx-auto">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAsk();
+                }}
+                className="flex items-center rounded-full px-4 py-2 border bg-transparent"
+              >
+                <Input
+                  placeholder="Escribí tu pregunta..."
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  className="flex-1 border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent py-3"
+                />
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="rounded-full w-10 h-10 p-2 ml-2"
+                >
+                  <ArrowUpIcon className="w-5 h-5" />
+                </Button>
+              </form>
+            </div>
+          </motion.div>
+        </>
+      )}
     </div>
   );
 }
