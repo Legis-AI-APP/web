@@ -13,7 +13,7 @@ export const login = async (email: string, password: string) => {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ idToken }),
+      body: JSON.stringify({ id_token: idToken }),
     });
     if (response.status === 401) {
       throw new Error("Invalid credentials");

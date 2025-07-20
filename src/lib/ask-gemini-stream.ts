@@ -1,22 +1,15 @@
-import { getAuth } from "firebase/auth";
+import { apiUrl } from "./api";
 
 export async function askGeminiStream(
   prompt: string,
   onMessage: (chunk: string) => void
 ): Promise<void> {
-  const auth = getAuth();
-  const user = auth.currentUser;
-
-  if (!user) throw new Error("No estás autenticado");
-
-  const token = await user.getIdToken();
-
-  const response = await fetch("http://localhost:8080/api/ai/ask", {
+  const response = await fetch(`${apiUrl}/api/ai/ask`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
+    credentials: "include",
     body: JSON.stringify({ prompt }),
   });
 

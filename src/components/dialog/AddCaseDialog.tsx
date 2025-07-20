@@ -30,11 +30,11 @@ export default function AddCaseDialog({ clients }: { clients: Client[] }) {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(false);
   const [newCase, setNewCase] = useState<
-    Omit<Case, "id" | "createdDate" | "updatedDate" | "status">
+    Omit<Case, "id" | "created_date" | "updated_date" | "status">
   >({
     title: "",
     description: "",
-    clientId: "",
+    client_id: "",
   });
 
   const handleSubmit = async () => {
@@ -42,7 +42,7 @@ export default function AddCaseDialog({ clients }: { clients: Client[] }) {
       return;
     setLoading(true);
     await createCase(newCase);
-    setNewCase({ title: "", description: "", clientId: "" });
+    setNewCase({ title: "", description: "", client_id: "" });
     setSelectedClient(null);
     setLoading(false);
     setDialogOpen(false);
@@ -104,7 +104,7 @@ export default function AddCaseDialog({ clients }: { clients: Client[] }) {
                       setSelectedClient(client);
                       setNewCase((prev) => ({
                         ...prev,
-                        clientId: client.id,
+                        client_id: client.id,
                       }));
                       setPopoverOpen(false);
                     }}
