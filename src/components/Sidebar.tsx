@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
@@ -76,7 +78,7 @@ export default function Sidebar({ chats }: SidebarProps) {
           </p>
 
           <div className="flex-1 overflow-y-auto px-2 flex flex-col gap-1 overflow-ellipsis">
-            {chats.map((chat) => (
+            {chats.toReversed().map((chat) => (
               <Button
                 key={chat.id}
                 variant={pathname === `/chat/${chat.id}` ? "default" : "ghost"}
