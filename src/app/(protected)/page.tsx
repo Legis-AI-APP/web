@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowUpIcon } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [question, setQuestion] = useState("");
@@ -18,6 +19,8 @@ export default function Home() {
 
   const bufferRef = useRef<string[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const router = useRouter();
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {
@@ -39,7 +42,17 @@ export default function Home() {
     bufferRef.current = [];
 
     try {
+      let redirected = false;
+
       await askGeminiStream(question, (chunk) => {
+        if (!redirected && chunk.startsWith("[CHAT-ID:")) {
+          const match = chunk.match(/\[CHAT-ID:(.+?)\]/);
+          if (match?.[1]) {
+            redirected = true;
+            router.push(`/chat/${match[1]}`);
+            return;
+          }
+        }
         bufferRef.current.push(chunk);
       });
     } catch (err: any) {

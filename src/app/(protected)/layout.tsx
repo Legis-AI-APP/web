@@ -1,5 +1,6 @@
 import Sidebar from "@/components/Sidebar";
-import { cookies } from "next/headers";
+import { getChats } from "@/lib/chats-service";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function ProtectedLayout({
@@ -9,6 +10,8 @@ export default async function ProtectedLayout({
 }) {
   const cookieStore = await cookies();
   const session = cookieStore.get("session")?.value;
+  const headersList = await headers();
+  const chats = await getChats(headersList);
 
   if (!session) {
     redirect("/login");
@@ -16,7 +19,7 @@ export default async function ProtectedLayout({
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      <Sidebar chats={chats} />
       <main className="flex flex-col flex-1 p-6 max-h-screen overflow-hidden">
         {children}
       </main>

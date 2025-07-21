@@ -2,7 +2,8 @@ import { apiUrl } from "./api";
 
 export async function askGeminiStream(
   prompt: string,
-  onMessage: (chunk: string) => void
+  onMessage: (chunk: string) => void,
+  chatId?: string
 ): Promise<void> {
   const response = await fetch(`${apiUrl}/api/ai/ask`, {
     method: "POST",
@@ -10,7 +11,7 @@ export async function askGeminiStream(
       "Content-Type": "application/json",
     },
     credentials: "include",
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ prompt, chat_id: chatId }),
   });
 
   if (!response.ok || !response.body) {
