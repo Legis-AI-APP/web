@@ -13,6 +13,14 @@ export default async function ProtectedLayout({
   const headersList = await headers();
   const chats = await getChats(headersList);
 
+  if (chats instanceof Response) {
+    if (chats.status === 401) {
+      redirect("/login");
+    } else {
+      throw new Error(`Error fetching chats: ${chats.statusText}`);
+    }
+  }
+
   if (!session) {
     redirect("/login");
   }

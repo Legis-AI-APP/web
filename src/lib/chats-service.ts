@@ -3,6 +3,7 @@ import { apiUrl } from "./api";
 
 export type Chat = {
   id: string;
+  title: string;
   messages: ChatMessage[];
 };
 
@@ -14,14 +15,14 @@ export type ChatMessage = {
 
 export const getChats = async (
   headers: ReadonlyHeaders
-): Promise<Omit<Chat, "messages">[]> => {
+): Promise<Omit<Chat, "messages">[] | Response> => {
   const response = await fetch(`${apiUrl}/api/chats`, {
     headers,
   });
-    console.log("Fetching chats from:", `${apiUrl}/api/chats`);
-    console.log(response.status, response.statusText);
+  console.log("Fetching chats from:", `${apiUrl}/api/chats`);
+  console.log(response.status, response.statusText);
 
-  if (!response.ok) throw new Error(await response.json());
+  if (!response.ok) return response;
   return response.json();
 };
 
@@ -38,5 +39,15 @@ export const getChat = async (
     throw new Error("Error al obtener el chat");
   }
 
+  return response.json();
+};
+
+export const createChat = async (): Promise<{ chat_id: string } | Response> => {
+  const response = await fetch(`${apiUrl}/api/chats`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!response.ok) return response;
   return response.json();
 };

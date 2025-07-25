@@ -86,7 +86,7 @@ export default function Sidebar({ chats }: SidebarProps) {
                 className="justify-start w-full text-sm truncate overflow-ellipsis"
               >
                 <MessageCircle className="mr-2 h-4 w-4" />
-                {`${chat.id}`}
+                {`${chat.title}`}
               </Button>
             ))}
           </div>

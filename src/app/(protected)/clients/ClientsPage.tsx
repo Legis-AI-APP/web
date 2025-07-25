@@ -2,6 +2,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import AppBar from "@/components/layout/AppBar";
 import { Client } from "@/lib/clients-service";
 import AddClientDialog from "@/components/dialog/AddClientDialog";
+import CardGrid from "@/components/CardGrid";
+import EmptyState from "@/components/EmptyState";
 
 export default function ClientsPage({ clients }: { clients: Client[] }) {
   return (
@@ -12,9 +14,9 @@ export default function ClientsPage({ clients }: { clients: Client[] }) {
       />
 
       {clients.length > 0 ? (
-        <div className="space-y-2">
+        <CardGrid>
           {clients.map((c) => (
-            <Card key={c.id}>
+            <Card key={c.id} className="w-[300px]">
               <CardContent className="p-4 text-sm space-y-1">
                 <div>
                   <strong>Nombre:</strong> {c.name}
@@ -28,13 +30,9 @@ export default function ClientsPage({ clients }: { clients: Client[] }) {
               </CardContent>
             </Card>
           ))}
-        </div>
+        </CardGrid>
       ) : (
-        <div className="flex flex-col items-center justify-center min-h-[82vh] w-full text-center text-muted-foreground text-sm">
-          Todavía no hay clientes.
-          <br />
-          Usá el botón de arriba para crear uno.
-        </div>
+        <EmptyState message="Todavía no hay clientes.\nUsá el botón de arriba para crear uno." />
       )}
     </div>
   );

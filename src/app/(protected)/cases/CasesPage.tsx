@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Case } from "@/lib/cases-service";
 import { Client } from "@/lib/clients-service";
 import AddCaseDialog from "@/components/dialog/AddCaseDialog";
+import CardGrid from "@/components/CardGrid";
+import EmptyState from "@/components/EmptyState";
 
 export default function CasesPage({
   cases,
@@ -21,26 +23,22 @@ export default function CasesPage({
       <AppBar title="Casos" actions={<AddCaseDialog clients={clients} />} />
 
       {cases.length > 0 ? (
-        <div className="space-y-3">
+        <CardGrid>
           {cases.map((c) => (
             <Card
               key={c.id}
               onClick={() => router.push(`/cases/${c.id}`)}
-              className="cursor-pointer hover:bg-muted transition-colors"
+              className="w-[300px] cursor-pointer hover:bg-muted transition-colors"
             >
-              <CardContent className="pt-4 space-y-2">
+              <CardContent className="p-4 text-sm space-y-1">
                 <h2 className="font-semibold">{c.title}</h2>
-                <p className="text-sm text-muted-foreground">{c.description}</p>
+                <p className="text-muted-foreground">{c.description}</p>
               </CardContent>
             </Card>
           ))}
-        </div>
+        </CardGrid>
       ) : (
-        <div className="flex flex-col items-center justify-center min-h-[82vh] w-full text-center text-muted-foreground text-sm">
-          Todavía no hay casos.
-          <br />
-          Usá el botón de arriba para crear uno.
-        </div>
+        <EmptyState message="Todavía no hay casos.\nUsá el botón de arriba para crear uno." />
       )}
     </div>
   );
