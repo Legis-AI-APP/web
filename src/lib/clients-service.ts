@@ -3,9 +3,13 @@ import { apiUrl } from "./api";
 
 export interface Client {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   document: string;
+  document_type: string;
+  phone: string;
+  address: string;
 }
 
 export const getClients = async (headers: ReadonlyHeaders) => {

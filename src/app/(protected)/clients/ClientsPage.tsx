@@ -10,7 +10,12 @@ export default function ClientsPage({ clients }: { clients: Client[] }) {
     <div className="space-y-6">
       <AppBar
         title="Clientes"
-        actions={<AddClientDialog triggerText="Nuevo cliente" />}
+        actions={
+          <AddClientDialog
+            triggerText="Nuevo cliente"
+            documentTypes={["CUIT", "CUIL", "CDI"]}
+          />
+        }
       />
 
       {clients.length > 0 ? (
@@ -19,13 +24,7 @@ export default function ClientsPage({ clients }: { clients: Client[] }) {
             <Card key={c.id} className="w-[300px]">
               <CardContent className="p-4 text-sm space-y-1">
                 <div>
-                  <strong>Nombre:</strong> {c.name}
-                </div>
-                <div>
-                  <strong>Email:</strong> {c.email}
-                </div>
-                <div>
-                  <strong>Documento:</strong> {c.document}
+                  <strong>{`${c.first_name} ${c.last_name}`}</strong>
                 </div>
               </CardContent>
             </Card>

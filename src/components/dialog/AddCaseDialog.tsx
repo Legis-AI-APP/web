@@ -78,7 +78,9 @@ export default function AddCaseDialog({ clients }: { clients: Client[] }) {
               role="combobox"
               className="w-full justify-between"
             >
-              {selectedClient ? selectedClient.name : "Seleccionar cliente"}
+              {selectedClient
+                ? selectedClient.first_name + " " + selectedClient.last_name
+                : "Seleccionar cliente"}
             </Button>
           </PopoverTrigger>
           <PopoverContent
@@ -91,6 +93,7 @@ export default function AddCaseDialog({ clients }: { clients: Client[] }) {
                   triggerText="Nuevo cliente"
                   onClientCreated={() => router.refresh()}
                   variant="outline"
+                  documentTypes={["CUIT", "CUIL", "CDI"]}
                 />
               </div>
               <CommandInput placeholder="Buscar cliente..." />
@@ -99,7 +102,7 @@ export default function AddCaseDialog({ clients }: { clients: Client[] }) {
                 {clients.map((client) => (
                   <CommandItem
                     key={client.id}
-                    value={client.name}
+                    value={client.first_name + " " + client.last_name}
                     onSelect={() => {
                       setSelectedClient(client);
                       setNewCase((prev) => ({
@@ -109,7 +112,7 @@ export default function AddCaseDialog({ clients }: { clients: Client[] }) {
                       setPopoverOpen(false);
                     }}
                   >
-                    {client.name}
+                    {client.first_name + " " + client.last_name}
                   </CommandItem>
                 ))}
               </CommandGroup>
