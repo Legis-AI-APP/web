@@ -1,4 +1,4 @@
-import { getCase, getFiles } from "@/lib/cases-service";
+import { getCase, getCaseFiles } from "@/lib/cases-service";
 import { headers } from "next/headers";
 import CasePage from "./CasePage";
 
@@ -13,7 +13,7 @@ export default async function Page({ params }: PageProps) {
   const { caseId } = await params;
   const [oldCase, files] = await Promise.all([
     getCase(caseId, headersList),
-    getFiles(caseId, headersList),
+    getCaseFiles(caseId, headersList),
   ]);
   return <CasePage oldCase={oldCase} files={files} />;
 }

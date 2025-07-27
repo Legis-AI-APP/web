@@ -4,7 +4,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Folder, Home, Menu, LogOut, MessageCircle } from "lucide-react";
+import { Folder, Home, Menu, LogOut, MessageCircle, User } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -23,7 +23,7 @@ export default function Sidebar({ chats }: SidebarProps) {
   const items = [
     { label: "Inicio", icon: Home, path: "/" },
     { label: "Casos", icon: Folder, path: "/cases" },
-    { label: "Clientes", icon: Folder, path: "/clients" },
+    { label: "Clientes", icon: User, path: "/clients" },
   ];
 
   const handleLogout = async () => {

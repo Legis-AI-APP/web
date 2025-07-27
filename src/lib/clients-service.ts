@@ -1,5 +1,6 @@
 import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
 import { apiUrl } from "./api";
+import { LegisFile } from "./legis-file";
 
 export interface Client {
   id: string;
@@ -24,6 +25,17 @@ export const getClients = async (headers: ReadonlyHeaders) => {
   return response.json() as Promise<Client[]>;
 };
 
+export const getClient = async (clientId: string, headers: ReadonlyHeaders) => {
+  const cookieHeader = headers.get("cookie") || "";
+  const response = await fetch(`${apiUrl}/api/clients/${clientId}`, {
+    headers: {
+      Cookie: cookieHeader,
+    },
+  });
+  if (!response.ok) throw new Error(await response.json());
+  return response.json() as Promise<Client>;
+};
+
 export const createClient = async (client: Omit<Client, "id">) => {
   const response = await fetch(`${apiUrl}/api/clients`, {
     method: "POST",
@@ -36,3 +48,27 @@ export const createClient = async (client: Omit<Client, "id">) => {
   if (!response.ok) throw new Error(await response.json());
   return response.json() as Promise<Client>;
 };
+
+export const getClientFiles = async (
+  caseId: string,
+  headers: ReadonlyHeaders
+) => {
+  const cookieHeader = headers.get("cookie") || "";
+  const response = await fetch(`${apiUrl}/api/clients/${caseId}/files`, {
+    headers: {
+      Cookie: cookieHeader,
+    },
+  });
+  if (!response.ok) throw new Error(await response.json());
+  return response.json() as Promise<LegisFile[]>;
+};
+
+export async function uploadClientFile(clientId: string, file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  await fetch(`${apiUrl}/api/clients/${clientId}/upload`, {
+    method: "POST",
+    body: form,
+    credentials: "include",
+  });
+}

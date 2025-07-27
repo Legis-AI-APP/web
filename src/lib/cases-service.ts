@@ -1,5 +1,6 @@
 import { apiUrl } from "./api";
 import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
+import { LegisFile } from "./legis-file";
 
 export interface Case {
   id: string;
@@ -10,11 +11,6 @@ export interface Case {
   updated_date: string;
   client_id: string;
 }
-
-export type CaseFile = {
-  name: string;
-  url: string;
-};
 
 export const getCases = async (headers: ReadonlyHeaders) => {
   const cookieHeader = headers.get("cookie") || "";
@@ -54,7 +50,10 @@ export const createCase = async (
   return response.json() as Promise<Case>;
 };
 
-export const getFiles = async (caseId: string, headers: ReadonlyHeaders) => {
+export const getCaseFiles = async (
+  caseId: string,
+  headers: ReadonlyHeaders
+) => {
   const cookieHeader = headers.get("cookie") || "";
   const response = await fetch(`${apiUrl}/api/cases/${caseId}/files`, {
     headers: {
@@ -62,10 +61,10 @@ export const getFiles = async (caseId: string, headers: ReadonlyHeaders) => {
     },
   });
   if (!response.ok) throw new Error(await response.json());
-  return response.json() as Promise<CaseFile[]>;
+  return response.json() as Promise<LegisFile[]>;
 };
 
-export const uploadFile = async (caseId: string, file: File) => {
+export const uploadCaseFile = async (caseId: string, file: File) => {
   const formData = new FormData();
   formData.append("file", file);
   const response = await fetch(`${apiUrl}/api/cases/${caseId}/upload`, {
@@ -74,5 +73,5 @@ export const uploadFile = async (caseId: string, file: File) => {
     credentials: "include",
   });
   if (!response.ok) throw new Error(await response.json());
-  return response.json() as Promise<CaseFile>;
+  return response.json() as Promise<LegisFile>;
 };

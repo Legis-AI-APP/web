@@ -7,15 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Loader } from "lucide-react";
 import AppBar from "@/components/layout/AppBar";
 import { AddDialog } from "@/components/dialog/AddDialog";
-import { Case, uploadCaseFile } from "@/lib/cases-service";
+import { Client, uploadClientFile } from "@/lib/clients-service";
 import { useRouter } from "next/navigation";
 import { LegisFile } from "@/lib/legis-file";
 
-export default function CasePage({
-  oldCase,
+export default function ClientPage({
+  client,
   files,
 }: {
-  oldCase: Case;
+  client: Client;
   files: LegisFile[];
 }) {
   const [file, setFile] = useState<File | null>(null);
@@ -25,7 +25,7 @@ export default function CasePage({
   const handleUpload = async () => {
     if (file) {
       setUploading(true);
-      await uploadCaseFile(oldCase.id, file);
+      await uploadClientFile(client.id, file);
       setUploading(false);
       setFile(null);
       router.refresh();
@@ -35,7 +35,7 @@ export default function CasePage({
   return (
     <div className="space-y-6">
       <AppBar
-        title={`${oldCase.title}`}
+        title={`${client.first_name} ${client.last_name}`}
         actions={
           <AddDialog title="Subir archivo" triggerText="Subir archivo">
             <div className="space-y-4">
@@ -60,7 +60,7 @@ export default function CasePage({
       />
 
       <div className="space-y-2">
-        <h2 className="font-semibold">Archivos del caso</h2>
+        <h2 className="font-semibold">Archivos del cliente</h2>
         {files.length > 0 ? (
           files.map((f) => (
             <Card key={f.name}>
@@ -78,7 +78,7 @@ export default function CasePage({
           ))
         ) : (
           <p className="text-muted-foreground text-sm">
-            Este caso aún no tiene archivos.
+            Este cliente aún no tiene archivos.
           </p>
         )}
       </div>
