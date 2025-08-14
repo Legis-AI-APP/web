@@ -1,6 +1,6 @@
-import { apiUrl } from "./api";
 import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
 import { LegisFile } from "./legis-file";
+import { apiUrl } from "./api";
 
 export interface Case {
   id: string;
@@ -38,7 +38,7 @@ export const getCase = async (caseId: string, headers: ReadonlyHeaders) => {
 export const createCase = async (
   data: Omit<Case, "id" | "created_date" | "updated_date" | "status">
 ) => {
-  const response = await fetch(`${apiUrl}/api/cases`, {
+  const response = await fetch(`/api/cases`, {
     method: "POST",
     credentials: "include",
     headers: {
@@ -67,7 +67,7 @@ export const getCaseFiles = async (
 export const uploadCaseFile = async (caseId: string, file: File) => {
   const formData = new FormData();
   formData.append("file", file);
-  const response = await fetch(`${apiUrl}/api/cases/${caseId}/upload`, {
+  const response = await fetch(`/api/cases/${caseId}/upload`, {
     method: "POST",
     body: formData,
     credentials: "include",

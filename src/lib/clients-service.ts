@@ -1,6 +1,6 @@
 import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
-import { apiUrl } from "./api";
 import { LegisFile } from "./legis-file";
+import { apiUrl } from "./api";
 
 export interface Client {
   id: string;
@@ -37,7 +37,7 @@ export const getClient = async (clientId: string, headers: ReadonlyHeaders) => {
 };
 
 export const createClient = async (client: Omit<Client, "id">) => {
-  const response = await fetch(`${apiUrl}/api/clients`, {
+  const response = await fetch(`/api/clients`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -66,7 +66,7 @@ export const getClientFiles = async (
 export async function uploadClientFile(clientId: string, file: File) {
   const form = new FormData();
   form.append("file", file);
-  await fetch(`${apiUrl}/api/clients/${clientId}/upload`, {
+  await fetch(`/api/clients/${clientId}/upload`, {
     method: "POST",
     body: form,
     credentials: "include",

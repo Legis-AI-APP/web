@@ -43,7 +43,7 @@ export const getChat = async (
 };
 
 export const createChat = async (): Promise<{ chat_id: string } | Response> => {
-  const response = await fetch(`${apiUrl}/api/chats`, {
+  const response = await fetch(`/api/chats`, {
     method: "POST",
     credentials: "include",
   });
