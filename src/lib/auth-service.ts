@@ -1,13 +1,12 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, inMemoryPersistence } from "./firebase";
-import { apiUrl } from "./api";
 
 export const login = async (email: string, password: string) => {
   try {
     await auth.setPersistence(inMemoryPersistence);
     const credential = await signInWithEmailAndPassword(auth, email, password);
     const idToken = await credential.user.getIdToken();
-    const response = await fetch(`${apiUrl}/api/auth/session`, {
+    const response = await fetch(`/api/auth/session`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -26,7 +25,7 @@ export const login = async (email: string, password: string) => {
 
 export const logout = async () => {
   try {
-    await fetch(`${apiUrl}/api/auth/logout`, {
+    await fetch(`/api/auth/logout`, {
       method: "POST",
       credentials: "include",
     });
