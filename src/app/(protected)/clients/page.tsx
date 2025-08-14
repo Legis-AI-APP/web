@@ -4,6 +4,7 @@ import ClientsPage from "./ClientsPage";
 
 export default async function Page() {
   const headersList = await headers();
-  const clients = await getClients(headersList);
+  const upstream = new Headers(headersList);
+  const clients = await getClients(upstream);
   return <ClientsPage clients={clients} />;
 }

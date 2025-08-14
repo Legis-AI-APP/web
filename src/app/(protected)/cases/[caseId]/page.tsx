@@ -10,10 +10,11 @@ type PageProps = {
 
 export default async function Page({ params }: PageProps) {
   const headersList = await headers();
+  const upstream = new Headers(headersList);
   const { caseId } = await params;
   const [oldCase, files] = await Promise.all([
-    getCase(caseId, headersList),
-    getCaseFiles(caseId, headersList),
+    getCase(caseId, upstream),
+    getCaseFiles(caseId, upstream),
   ]);
   return <CasePage oldCase={oldCase} files={files} />;
 }

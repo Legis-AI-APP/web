@@ -11,7 +11,8 @@ export default async function ProtectedLayout({
   const cookieStore = await cookies();
   const session = cookieStore.get("session")?.value;
   const headersList = await headers();
-  const chats = await getChats(headersList);
+  const upstream = new Headers(headersList);
+  const chats = await getChats(upstream);
 
   if (chats instanceof Response) {
     if (chats.status === 401) {
