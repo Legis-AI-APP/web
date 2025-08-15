@@ -1,7 +1,15 @@
+import { apiUrl } from "@/lib/api";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${apiUrl}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
