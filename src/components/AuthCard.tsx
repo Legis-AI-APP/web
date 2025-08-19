@@ -7,14 +7,23 @@ import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, provider } from "@/lib/firebase";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { login } from "@/lib/auth-service";
 import { Loader } from "lucide-react";
 
 export default function AuthCard({ type }: { type: "login" | "register" }) {
+  // --- tu lógica y estados originales ---
+  const [name, setName] = useState(""); // visible solo en register (no cambia tu flujo Firebase actual)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -70,41 +79,72 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
 
   const handleGoogle = async () => {
     try {
+      setLoading(true);
       await signInWithPopup(auth, provider);
       toast.success("Sesión iniciada con Google");
       router.push("/");
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Error al iniciar sesión con Google");
+    } finally {
+      setLoading(false);
     }
   };
 
+  // --- UI al estilo lovable (misma paleta/clases) ---
   return (
-    <Card className="w-full max-w-sm shadow-xl border bg-background">
-      <CardHeader>
-        <CardTitle>
-          {type === "login" ? "Iniciar sesión" : "Registrarse"}
+    <Card className="shadow-sm border rounded-soft bg-card/50 backdrop-blur-sm">
+      <CardHeader className="text-center">
+        <CardTitle className="h1">
+          {type === "login" ? "Iniciar Sesión" : "Crear Cuenta"}
         </CardTitle>
+        <CardDescription className="text-sm text-muted-foreground">
+          {type === "login"
+            ? "Accedé a tu plataforma legal inteligente"
+            : "Comenzá a optimizar tu práctica legal"}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
+
+      <CardContent className="space-y-6">
         <form
-          className="space-y-4"
           onSubmit={(e) => {
             e.preventDefault();
             handleSubmit();
           }}
+          className="space-y-4"
         >
-          <div>
+          {type === "register" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="name" className="text-sm font-medium">
+                Nombre completo
+              </Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Dra. María Gómez"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-10 rounded-standard"
+              />
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-sm font-medium">
+              Email
+            </Label>
             <Input
-              placeholder="Correo electrónico"
+              id="email"
               type="email"
+              placeholder="tu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={
+              className={`h-10 rounded-standard ${
                 formTouched && errors.email
                   ? "border-red-500 focus-visible:ring-red-500"
                   : ""
-              }
+              }`}
+              required
             />
             {formTouched && errors.email && (
               <Alert variant="destructive" className="mt-2">
@@ -113,17 +153,22 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
             )}
           </div>
 
-          <div>
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-sm font-medium">
+              Contraseña
+            </Label>
             <Input
-              placeholder="Contraseña"
+              id="password"
               type="password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={
+              className={`h-10 rounded-standard ${
                 formTouched && errors.password
                   ? "border-red-500 focus-visible:ring-red-500"
                   : ""
-              }
+              }`}
+              required
             />
             {formTouched && errors.password && (
               <Alert variant="destructive" className="mt-2">
@@ -133,17 +178,22 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
           </div>
 
           {type === "register" && (
-            <div>
+            <div className="space-y-1.5">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                Confirmar contraseña
+              </Label>
               <Input
-                placeholder="Confirmar contraseña"
+                id="confirmPassword"
                 type="password"
+                placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className={
+                className={`h-10 rounded-standard ${
                   formTouched && errors.confirm
                     ? "border-red-500 focus-visible:ring-red-500"
                     : ""
-                }
+                }`}
+                required
               />
               {formTouched && errors.confirm && (
                 <Alert variant="destructive" className="mt-2">
@@ -155,48 +205,54 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full h-10 rounded-standard font-medium"
             disabled={!isFilled || loading}
           >
             {loading ? (
               <Loader className="w-4 h-4 animate-spin" />
             ) : type === "login" ? (
-              "Entrar"
+              "Ingresar"
             ) : (
               "Crear cuenta"
             )}
           </Button>
         </form>
 
+        {/* Mantengo Google Sign-In (tu funcionalidad) */}
         <Button
           variant="outline"
-          className="w-full mt-2"
+          className="w-full h-10 rounded-standard font-medium"
           onClick={handleGoogle}
+          disabled={loading}
         >
-          Continuar con Google
+          {loading ? (
+            <Loader className="w-4 h-4 animate-spin" />
+          ) : (
+            "Continuar con Google"
+          )}
         </Button>
 
-        <div className="text-sm text-center text-muted-foreground mt-4">
+        <div className="text-center pt-2">
           {type === "login" ? (
-            <>
-              ¿No tenés una cuenta?{" "}
+            <p className="text-sm text-muted-foreground">
+              ¿No tenés cuenta?{" "}
               <Link
                 href="/register"
-                className="underline hover:text-primary transition-colors"
+                className="text-primary hover:text-primary/80 font-medium"
               >
                 Registrate
               </Link>
-            </>
+            </p>
           ) : (
-            <>
-              ¿Ya tenés una cuenta?{" "}
+            <p className="text-sm text-muted-foreground">
+              ¿Ya tenés cuenta?{" "}
               <Link
                 href="/login"
-                className="underline hover:text-primary transition-colors"
+                className="text-primary hover:text-primary/80 font-medium"
               >
-                Iniciar sesión
+                Iniciá sesión
               </Link>
-            </>
+            </p>
           )}
         </div>
       </CardContent>
