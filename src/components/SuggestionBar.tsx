@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, Variants } from "framer-motion";
 
 export type SuggestionBarProps = {
   items: string[];
@@ -89,7 +89,7 @@ export function SuggestionBar({
     },
   };
 
-  const item = {
+  const item: Variants = {
     hidden: { opacity: 0, y: 6, scale: 0.98, filter: "blur(2px)" },
     show: {
       opacity: 1,

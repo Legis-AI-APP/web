@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { createChat } from "@/lib/chats-service";
 import { cn } from "@/lib/utils";
 import { SuggestionBar } from "@/components/SuggestionBar";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 export default function Home() {
   const [message, setMessage] = useState("");
@@ -52,8 +52,8 @@ export default function Home() {
   };
 
   // Variants suaves y consistentes
-  const fadeIn = { initial: { opacity: 0 }, animate: { opacity: 1 } };
-  const upIn = {
+  const fadeIn: Variants = { initial: { opacity: 0 }, animate: { opacity: 1 } };
+  const upIn: Variants = {
     initial: { opacity: 0, y: 8, filter: "blur(2px)" },
     animate: {
       opacity: 1,
