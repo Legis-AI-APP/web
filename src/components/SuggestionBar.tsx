@@ -114,7 +114,7 @@ export function SuggestionBar({
         animate="show"
       >
         <AnimatePresence initial={false}>
-          {visibleItems.map((text, i) => (
+          {visibleItems.map((text) => (
             <motion.button
               key={text}
               type="button"
