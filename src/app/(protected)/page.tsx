@@ -2,84 +2,141 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowUpIcon } from "lucide-react";
+import { Send } from "lucide-react";
 import { toast } from "sonner";
 import { createChat } from "@/lib/chats-service";
+import { cn } from "@/lib/utils";
+import { SuggestionBar } from "@/components/SuggestionBar";
+import { motion } from "framer-motion";
 
 export default function Home() {
-  const [question, setQuestion] = useState("");
-  const [hasAsked, setHasAsked] = useState(false);
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleAsk = async () => {
-    const prompt = question.trim();
-    if (!prompt) return;
+  const suggestions = useMemo(
+    () => [
+      "¿Querés que analice un contrato?",
+      "¿Redactamos una carta documento?",
+      "¿Necesitás ayuda con un reclamo por daños?",
+      "¿Tenés dudas sobre derechos del consumidor?",
+      "Explicame una cláusula de confidencialidad",
+      "Hacé un resumen legal de este PDF",
+    ],
+    []
+  );
 
-    setHasAsked(true);
-    setQuestion("");
+  const handleSuggestionClick = (s: string) => setMessage(s);
 
-    const animationDone = new Promise<void>((resolve) =>
-      setTimeout(resolve, 600)
-    );
+  const handleSend = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const prompt = message.trim();
+    if (!prompt || submitting) return;
 
+    setSubmitting(true);
     try {
       const chat = await createChat();
       if (chat instanceof Response) {
         throw new Error(`Error creating chat: ${chat.statusText}`);
       }
-
-      await animationDone;
       router.push(`/chat/${chat.chat_id}?prompt=${encodeURIComponent(prompt)}`);
     } catch (err: any) {
       toast.error("Error al crear la conversación");
-      setHasAsked(false);
+      setSubmitting(false);
     }
   };
 
+  // Variants suaves y consistentes
+  const fadeIn = { initial: { opacity: 0 }, animate: { opacity: 1 } };
+  const upIn = {
+    initial: { opacity: 0, y: 8, filter: "blur(2px)" },
+    animate: {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      transition: { type: "spring", stiffness: 160, damping: 18 },
+    },
+  };
+
   return (
-    <div className="flex flex-col h-screen items-center justify-center px-4 text-center">
-      <AnimatePresence mode="wait">
-        {!hasAsked && (
-          <motion.div
-            key="form"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ y: 100, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="w-full max-w-xl"
-          >
-            <h1 className="text-3xl font-semibold text-muted-foreground mb-6">
-              Bienvenido/a
-            </h1>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleAsk();
-              }}
-              className="flex items-center rounded-full px-4 py-2 border bg-card"
-            >
+    <div className="min-h-screen flex items-center justify-center px-4 pb-22">
+      <div className="w-full max-w-2xl space-y-6">
+        {/* Hero */}
+        <motion.div
+          className="text-center"
+          initial="initial"
+          animate="animate"
+          variants={fadeIn}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <h1 className="text-3xl sm:text-4xl font-medium mb-8 text-foreground">
+            ¿Qué vamos a hacer hoy?
+          </h1>
+        </motion.div>
+
+        {/* Input con botón adentro */}
+        <motion.form
+          onSubmit={handleSend}
+          className="relative max-w-3xl mx-auto w-full"
+          initial="initial"
+          animate="animate"
+          variants={upIn}
+          transition={{ delay: 0.05 }}
+        >
+          <div className="bg-card/60 backdrop-blur-sm border border-border rounded-full shadow-sm">
+            <div className="relative flex items-center">
               <Input
-                placeholder="¿Qué vamos a hacer hoy?"
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                className="flex-1 border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent py-3"
+                ref={inputRef}
+                placeholder="Escribí tu consulta legal aquí..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className={cn(
+                  "h-12 px-5 pr-14 w-full rounded-full text-base bg-transparent border-0 shadow-none",
+                  "focus-visible:ring-0 focus-visible:ring-offset-0"
+                )}
+                disabled={submitting}
               />
-              <Button
-                type="submit"
-                disabled={!question.trim()}
-                className="rounded-full w-10 h-10 p-2 ml-2"
-              >
-                <ArrowUpIcon className="w-5 h-5" />
-              </Button>
-            </form>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <div className="absolute right-1.5">
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.15 }}
+                >
+                  <Button
+                    type="submit"
+                    size="icon"
+                    className="h-9 w-9 rounded-full"
+                    disabled={submitting || !message.trim()}
+                    aria-label="Enviar"
+                    asChild={false}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </motion.form>
+
+        {/* Sugerencias: UNA SOLA FILA, solo completas (con animaciones) */}
+        <SuggestionBar items={suggestions} onPick={handleSuggestionClick} />
+
+        {/* Nota breve */}
+        <motion.p
+          className="text-center text-xs text-muted-foreground"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.35 }}
+        >
+          Pegá un resumen o pedí que redacte un documento. También podés
+          adjuntar archivos en el chat.
+        </motion.p>
+      </div>
     </div>
   );
 }

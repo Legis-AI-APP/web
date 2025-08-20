@@ -4,8 +4,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { auth, provider } from "@/lib/firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
 import {
   Card,
@@ -63,29 +63,14 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
     try {
       if (type === "login") {
         await login(email, password);
-        toast.success("Sesión iniciada con éxito");
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
-        toast.success("Cuenta creada con éxito");
+        await login(email, password);
       }
       router.push("/");
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Error al autenticar");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogle = async () => {
-    try {
-      setLoading(true);
-      await signInWithPopup(auth, provider);
-      toast.success("Sesión iniciada con Google");
-      router.push("/");
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.message || "Error al iniciar sesión con Google");
     } finally {
       setLoading(false);
     }
@@ -217,20 +202,6 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
             )}
           </Button>
         </form>
-
-        {/* Mantengo Google Sign-In (tu funcionalidad) */}
-        <Button
-          variant="outline"
-          className="w-full h-10 rounded-standard font-medium"
-          onClick={handleGoogle}
-          disabled={loading}
-        >
-          {loading ? (
-            <Loader className="w-4 h-4 animate-spin" />
-          ) : (
-            "Continuar con Google"
-          )}
-        </Button>
 
         <div className="text-center pt-2">
           {type === "login" ? (
