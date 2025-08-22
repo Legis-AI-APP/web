@@ -64,7 +64,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 pb-22">
+    <div className="min-h-screen flex items-center justify-center px-4 pb-22 pt-8">
       <div className="w-full max-w-2xl space-y-6">
         {/* Hero */}
         <motion.div
@@ -74,7 +74,7 @@ export default function Home() {
           variants={fadeIn}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <h1 className="text-3xl sm:text-4xl font-medium mb-8 text-foreground">
+          <h1 className="text-3xl sm:text-4xl font-medium mb-10 text-foreground">
             ¿Qué vamos a hacer hoy?
           </h1>
         </motion.div>

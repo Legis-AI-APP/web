@@ -60,7 +60,7 @@ export default function Sidebar({ chats }: SidebarProps) {
 
   // ---- UI chunk reutilizable (lovable-style) ----
   const NavContent = (
-    <div className="p-2.5 h-full flex flex-col">
+    <div className="p-2 h-full flex flex-col">
       {/* Main Navigation */}
       <div>
         <div className="space-y-1">
@@ -78,7 +78,8 @@ export default function Sidebar({ chats }: SidebarProps) {
                   active
                     ? "bg-primary text-primary-foreground"
                     : "hover:bg-accent/50",
-                  expanded ? null : "justify-center"
+                  expanded ? null : "justify-center",
+                  isMobile ? "justify-start" : null
                 )}
               >
                 <Icon className="h-4 w-4 min-w-4" />
@@ -117,7 +118,7 @@ export default function Sidebar({ chats }: SidebarProps) {
                       if (isMobile) setOpen(false);
                     }}
                     className={cn(
-                      "w-full flex items-center gap-2 pt-4 pb-4 rounded-md text-sm transition-all duration-200 truncate px-2",
+                      "w-full flex items-center gap-2 pt-2 pb-2 rounded-md text-sm transition-all duration-200 truncate px-2",
                       active
                         ? "bg-primary text-primary-foreground"
                         : "hover:bg-accent/50"
@@ -168,9 +169,11 @@ export default function Sidebar({ chats }: SidebarProps) {
           </SheetTrigger>
           <SheetContent
             side="left"
-            className="p-0 w-72 bg-background/80 backdrop-blur-sm border-r"
+            className="p-0 w-64 bg-background/80 backdrop-blur-sm border-r"
           >
-            {NavContent}
+            <div className="pt-16">
+              {NavContent}
+            </div>
           </SheetContent>
         </Sheet>
       </div>
@@ -195,10 +198,13 @@ export default function Sidebar({ chats }: SidebarProps) {
         className={cn(
           "hidden md:flex fixed top-4 left-4 z-40",
           "h-[calc(100dvh-2rem)]", // alto flotante (con margen)
-          "rounded-2xl shadow-lg border bg-background/85 backdrop-blur-md",
+          "rounded-2xl border bg-background/85 backdrop-blur-md",
           "flex-col transition-all duration-300 ease-in-out",
           expanded ? "w-56" : "w-16"
         )}
+        style={{
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.03)'
+        }}
       >
         {/* Toggle */}
         <div
