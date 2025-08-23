@@ -133,18 +133,20 @@ export default function Sidebar({ chats }: SidebarProps) {
         </div>
       )}
 
-      {/* Footer */}
-      <div className="pt-2">
+      {/* Footer - Logout Button */}
+      <div className="mt-auto pt-2">
         <Button
           variant="ghost"
           onClick={handleLogout}
           className={cn(
-            "w-full justify-start text-sm",
+            "w-full justify-center text-sm",
             !isMobile && !expanded && "justify-center"
           )}
         >
-          <LogOut className="h-4 w-4 mr-2" />
-          {((!isMobile && expanded) || isMobile) && "Cerrar sesión"}
+          <LogOut className="h-4 w-4" />
+          {((!isMobile && expanded) || isMobile) && (
+            <span className="ml-2">Cerrar sesión</span>
+          )}
         </Button>
       </div>
     </div>
