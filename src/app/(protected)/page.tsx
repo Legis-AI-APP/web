@@ -65,7 +65,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 pb-22 pt-8">
-      <div className="w-full max-w-2xl space-y-6">
+      <div className="w-full max-w-3xl space-y-6">
         {/* Hero */}
         <motion.div
           className="text-center"

@@ -51,8 +51,8 @@ export default function AddCaseDialog({ clients }: { clients: Client[] }) {
 
   return (
     <AddDialog
-      title="Crear caso"
-      triggerText="Nuevo caso"
+      title="Crear asunto"
+      triggerText="Nuevo asunto"
       open={dialogOpen}
       onOpenChange={setDialogOpen}
     >
@@ -121,7 +121,7 @@ export default function AddCaseDialog({ clients }: { clients: Client[] }) {
         </Popover>
 
         <Button onClick={handleSubmit} disabled={loading} className="w-full">
-          {loading ? <Loader className="animate-spin w-4 h-4" /> : "Crear caso"}
+          {loading ? <Loader className="animate-spin w-4 h-4" /> : "Crear asunto"}
         </Button>
       </div>
     </AddDialog>

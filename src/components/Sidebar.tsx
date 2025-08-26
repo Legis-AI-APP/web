@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import LegisLogo from "@/components/LegisLogo";
 
 type SidebarProps = {
   chats: Omit<Chat, "messages">[];
@@ -35,7 +36,7 @@ export default function Sidebar({ chats }: SidebarProps) {
     () => [
       { label: "Dashboard", icon: Home, path: "/" },
       { label: "Clientes", icon: User, path: "/clients" },
-      { label: "Casos", icon: Folder, path: "/cases" },
+      { label: "Asuntos", icon: Folder, path: "/cases" },
       { label: "Documentos", icon: MessageCircle, path: "/documents" },
     ],
     []
@@ -173,7 +174,10 @@ export default function Sidebar({ chats }: SidebarProps) {
             side="left"
             className="p-0 w-64 bg-background/80 backdrop-blur-sm border-r"
           >
-            <div className="pt-16">
+            <div className="pt-4 px-4 pb-2 border-b">
+              <LegisLogo size="md" showText={true} />
+            </div>
+            <div className="pt-4">
               {NavContent}
             </div>
           </SheetContent>
@@ -212,9 +216,14 @@ export default function Sidebar({ chats }: SidebarProps) {
         <div
           className={cn(
             "pt-2 px-2",
-            expanded ? "flex justify-end" : "flex justify-center"
+            expanded ? "flex justify-between items-center" : "flex justify-center"
           )}
         >
+          {expanded && (
+            <div className="flex items-center">
+              <LegisLogo size="md" showText={false} />
+            </div>
+          )}
           <Button
             variant="ghost"
             size="icon"

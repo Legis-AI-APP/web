@@ -20,7 +20,7 @@ export default function CasesPage({
 
   return (
     <div className="space-y-6">
-      <AppBar title="Casos" actions={<AddCaseDialog clients={clients} />} />
+      <AppBar title="Asuntos" actions={<AddCaseDialog clients={clients} />} />
 
       {cases.length > 0 ? (
         <CardGrid>
@@ -38,7 +38,7 @@ export default function CasesPage({
           ))}
         </CardGrid>
       ) : (
-        <EmptyState message="Todavía no hay casos.\nUsá el botón de arriba para crear uno." />
+        <EmptyState message="Todavía no hay Asuntos.\nUsá el botón de arriba para crear uno." />
       )}
     </div>
   );

@@ -38,7 +38,7 @@ export default function ClientPage({
   const cases = [
     {
       id: '1',
-      name: 'Caso Legal Principal',
+      name: 'Asunto Legal Principal',
       status: 'En Progreso',
       startDate: '2024-01-10',
       nextHearing: '2024-02-15',
@@ -205,7 +205,7 @@ export default function ClientPage({
         >
           <Tabs defaultValue="cases" className="space-y-6">
             <TabsList className="grid w-full grid-cols-3 bg-muted rounded-lg">
-              <TabsTrigger value="cases" className="rounded-lg">Casos</TabsTrigger>
+              <TabsTrigger value="cases" className="rounded-lg">Asuntos</TabsTrigger>
               <TabsTrigger value="documents" className="rounded-lg">Documentos</TabsTrigger>
               <TabsTrigger value="timeline" className="rounded-lg">Cronología</TabsTrigger>
             </TabsList>

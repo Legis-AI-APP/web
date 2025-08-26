@@ -60,7 +60,7 @@ export default function CasePage({
       />
 
       <div className="space-y-2">
-        <h2 className="font-semibold">Archivos del caso</h2>
+        <h2 className="font-semibold">Archivos del asunto</h2>
         {files.length > 0 ? (
           files.map((f) => (
             <Card key={f.name}>
@@ -78,7 +78,7 @@ export default function CasePage({
           ))
         ) : (
           <p className="text-muted-foreground text-sm">
-            Este caso aún no tiene archivos.
+            Este asunto aún no tiene archivos.
           </p>
         )}
       </div>
