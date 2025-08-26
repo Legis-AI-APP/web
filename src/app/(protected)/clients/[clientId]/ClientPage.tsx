@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader, User, Phone, Mail, MapPin, FolderOpen, FileText, Calendar, Edit, Download } from 'lucide-react';
 import { AddDialog } from "@/components/dialog/AddDialog";
+import AddCaseDialog from "@/components/dialog/AddCaseDialog";
 import { Client, uploadClientFile } from "@/lib/clients-service";
 import { useRouter } from "next/navigation";
 import { LegisFile } from "@/lib/legis-file";
@@ -114,27 +115,6 @@ export default function ClientPage({
             <p className="text-muted-foreground">Cliente desde {new Date().toLocaleDateString('es-AR')}</p>
           </div>
         </div>
-        <div className="flex space-x-3">
-          <AddDialog title="Subir archivo" triggerText="Subir archivo">
-            <div className="space-y-4">
-              <Input
-                type="file"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
-              />
-              <Button
-                onClick={handleUpload}
-                disabled={uploading || !file}
-                className="w-full"
-              >
-                {uploading ? (
-                  <Loader className="w-4 h-4 animate-spin" />
-                ) : (
-                  "Subir"
-                )}
-              </Button>
-            </div>
-          </AddDialog>
-        </div>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -217,6 +197,12 @@ export default function ClientPage({
                 animate="visible"
                 className="space-y-6"
               >
+                <div className="flex justify-end items-center">
+                  <AddCaseDialog
+                    clients={[client]}
+                    preSelectedClient={client}
+                  />
+                </div>
                 {cases.map((case_) => (
                   <motion.div key={case_.id} variants={itemVariants}>
                     <Card
@@ -270,6 +256,27 @@ export default function ClientPage({
                 animate="visible"
                 className="space-y-4"
               >
+                <div className="flex justify-end items-center">
+                  <AddDialog title="Subir documento" triggerText="Nuevo documento">
+                    <div className="space-y-4">
+                      <Input
+                        type="file"
+                        onChange={(e) => setFile(e.target.files?.[0] || null)}
+                      />
+                      <Button
+                        onClick={handleUpload}
+                        disabled={uploading || !file}
+                        className="w-full"
+                      >
+                        {uploading ? (
+                          <Loader className="w-4 h-4 animate-spin" />
+                        ) : (
+                          "Subir"
+                        )}
+                      </Button>
+                    </div>
+                  </AddDialog>
+                </div>
                 {files.length > 0 ? (
                   files.map((doc) => (
                     <motion.div key={doc.name} variants={itemVariants}>

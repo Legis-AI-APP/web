@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -23,19 +23,36 @@ import { Case, createCase } from "@/lib/cases-service";
 import { Client } from "@/lib/clients-service";
 import { useRouter } from "next/navigation";
 
-export default function AddCaseDialog({ clients }: { clients: Client[] }) {
+export default function AddCaseDialog({
+  clients,
+  preSelectedClient
+}: {
+  clients: Client[];
+  preSelectedClient?: Client;
+}) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(false);
   const [newCase, setNewCase] = useState<
-    Omit<Case, "id" | "created_date" | "updated_date" | "status">
+    Omit<Case, "id" | "created_at" | "updated_at" | "status">
   >({
     title: "",
     description: "",
     client_id: "",
   });
+
+  // Auto-select client when preSelectedClient is provided
+  useEffect(() => {
+    if (preSelectedClient) {
+      setSelectedClient(preSelectedClient);
+      setNewCase(prev => ({
+        ...prev,
+        client_id: preSelectedClient.id,
+      }));
+    }
+  }, [preSelectedClient]);
 
   const handleSubmit = async () => {
     if (!newCase.title.trim() || !newCase.description.trim() || !selectedClient)

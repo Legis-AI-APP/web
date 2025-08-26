@@ -16,6 +16,7 @@ import {
   Menu,
   MessageSquare as MessageCircle,
   Users as User,
+  FileText,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -37,7 +38,7 @@ export default function Sidebar({ chats }: SidebarProps) {
       { label: "Dashboard", icon: Home, path: "/" },
       { label: "Clientes", icon: User, path: "/clients" },
       { label: "Asuntos", icon: Folder, path: "/cases" },
-      { label: "Documentos", icon: MessageCircle, path: "/documents" },
+      { label: "Documentos", icon: FileText, path: "/documents" },
     ],
     []
   );

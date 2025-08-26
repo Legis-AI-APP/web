@@ -2,22 +2,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Send } from "lucide-react";
 import { toast } from "sonner";
 import { createChat } from "@/lib/chats-service";
-import { cn } from "@/lib/utils";
 import { SuggestionBar } from "@/components/SuggestionBar";
 import { motion, Variants } from "framer-motion";
+import ChatInput from "@/components/chat/ChatInput";
 
 export default function Home() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const suggestions = useMemo(
     () => [
@@ -79,49 +75,21 @@ export default function Home() {
           </h1>
         </motion.div>
 
-        {/* Input con botón adentro */}
-        <motion.form
-          onSubmit={handleSend}
-          className="relative max-w-3xl mx-auto w-full"
+        {/* Input usando el componente ChatInput */}
+        <motion.div
+          className="max-w-3xl mx-auto w-full"
           initial="initial"
           animate="animate"
           variants={upIn}
           transition={{ delay: 0.05 }}
         >
-          <div className="bg-card/60 backdrop-blur-sm border border-border rounded-full shadow-sm">
-            <div className="relative flex items-center">
-              <Input
-                ref={inputRef}
-                placeholder="Escribí tu consulta legal aquí..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className={cn(
-                  "h-12 px-5 pr-14 w-full rounded-full text-base bg-transparent border-0 shadow-none",
-                  "focus-visible:ring-0 focus-visible:ring-offset-0"
-                )}
-                disabled={submitting}
-              />
-              <div className="absolute right-1.5">
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.15 }}
-                >
-                  <Button
-                    type="submit"
-                    size="icon"
-                    className="h-9 w-9 rounded-full"
-                    disabled={submitting || !message.trim()}
-                    aria-label="Enviar"
-                    asChild={false}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </motion.div>
-              </div>
-            </div>
-          </div>
-        </motion.form>
+          <ChatInput
+            value={message}
+            onChange={setMessage}
+            onSubmit={handleSend}
+            disabled={submitting}
+          />
+        </motion.div>
 
         {/* Sugerencias: UNA SOLA FILA, solo completas (con animaciones) */}
         <SuggestionBar items={suggestions} onPick={handleSuggestionClick} />

@@ -7,8 +7,8 @@ export interface Case {
   title: string;
   description: string;
   status: string;
-  created_date: string;
-  updated_date: string;
+  created_at: string;
+  updated_at: string;
   client_id: string;
 }
 
@@ -36,7 +36,7 @@ export const getCase = async (caseId: string, headers: ReadonlyHeaders) => {
 };
 
 export const createCase = async (
-  data: Omit<Case, "id" | "created_date" | "updated_date" | "status">
+  data: Omit<Case, "id" | "created_at" | "updated_at" | "status">
 ) => {
   const response = await fetch(`/api/cases`, {
     method: "POST",
