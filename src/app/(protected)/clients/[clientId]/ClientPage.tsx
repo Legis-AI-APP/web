@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader, User, Phone, Mail, MapPin, FolderOpen, FileText, Calendar, Edit, Download } from 'lucide-react';
+import { Loader, User, Phone, Mail, MapPin, FolderOpen, FileText, Calendar, Edit, Download, Plus, Users } from 'lucide-react';
 import { AddDialog } from "@/components/dialog/AddDialog";
 import AddCaseDialog from "@/components/dialog/AddCaseDialog";
 import { Client, uploadClientFile } from "@/lib/clients-service";
@@ -52,6 +52,34 @@ export default function ClientPage({
       startDate: '2024-01-12',
       nextHearing: '2024-02-20',
       description: 'Revisión y análisis de documentación'
+    }
+  ];
+
+  // Mock data for persons (to be replaced with real data later)
+  const persons = [
+    {
+      id: '1',
+      name: 'María González',
+      role: 'Testigo',
+      relationship: 'Vecina',
+      phone: '+54 11 1234-5678',
+      email: 'maria.gonzalez@email.com'
+    },
+    {
+      id: '2',
+      name: 'Carlos Rodríguez',
+      role: 'Perito',
+      relationship: 'Profesional',
+      phone: '+54 11 9876-5432',
+      email: 'carlos.rodriguez@perito.com'
+    },
+    {
+      id: '3',
+      name: 'Ana Martínez',
+      role: 'Testigo',
+      relationship: 'Compañera de trabajo',
+      phone: '+54 11 5555-1234',
+      email: 'ana.martinez@trabajo.com'
     }
   ];
 
@@ -173,6 +201,72 @@ export default function ClientPage({
               </div>
             </CardContent>
           </Card>
+
+          {/* Persons Section */}
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={fadeInUp}
+            transition={{ delay: 0.15 }}
+            className="mt-6"
+          >
+            <Card className="shadow-2xl border-0" style={{
+              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.03)'
+            }}>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Users className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <CardTitle className="text-lg text-foreground">Personas</CardTitle>
+                </div>
+                <Button variant="outline" size="sm" className="border-primary text-primary hover:bg-primary hover:text-white">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Agregar
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {persons.length > 0 ? (
+                  persons.map((person) => (
+                    <div key={person.id} className="p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-foreground text-sm">{person.name}</h4>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700">
+                              {person.role}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">{person.relationship}</span>
+                          </div>
+                          {person.phone && (
+                            <div className="flex items-center space-x-2 mt-2">
+                              <Phone className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-xs text-muted-foreground">{person.phone}</span>
+                            </div>
+                          )}
+                          {person.email && (
+                            <div className="flex items-center space-x-2 mt-1">
+                              <Mail className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-xs text-muted-foreground">{person.email}</span>
+                            </div>
+                          )}
+                        </div>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-6">
+                    <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">No hay personas asociadas</p>
+                    <p className="text-xs text-muted-foreground mt-1">Agrega personas relacionadas al caso</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
         </motion.div>
 
         {/* Main Content */}
