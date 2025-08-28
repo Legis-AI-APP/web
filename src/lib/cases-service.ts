@@ -12,6 +12,14 @@ export interface Case {
   client_id: string;
 }
 
+export interface Event {
+  id: string;
+  title: string;
+  description: string;
+  file_urls: string[];
+  created_at: string;
+}
+
 export const getCases = async (headers: ReadonlyHeaders) => {
   const cookieHeader = headers.get("cookie") || "";
   const response = await fetch(`${apiUrl}/api/cases`, {
@@ -74,4 +82,34 @@ export const uploadCaseFile = async (caseId: string, file: File) => {
   });
   if (!response.ok) throw new Error(await response.json());
   return response.json() as Promise<LegisFile>;
+};
+
+export const createCaseEvent = async (
+  caseId: string,
+  event: Omit<Event, "id" | "created_at">
+) => {
+  const response = await fetch(`/api/cases/${caseId}/events`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(event),
+  });
+  if (!response.ok) throw new Error(await response.json());
+  return response.json() as Promise<Event>;
+};
+
+export const getCaseEvents = async (
+  caseId: string,
+  headers: ReadonlyHeaders
+) => {
+  const cookieHeader = headers.get("cookie") || "";
+  const response = await fetch(`${apiUrl}/api/cases/${caseId}/events`, {
+    headers: {
+      Cookie: cookieHeader,
+    },
+  });
+  if (!response.ok) throw new Error(await response.json());
+  return response.json() as Promise<Event[]>;
 };
