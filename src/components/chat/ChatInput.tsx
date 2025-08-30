@@ -55,7 +55,7 @@ export default function ChatInput({ value, onChange, onSubmit, disabled }: Props
       variants={upIn}
       transition={{ delay: 0.05 }}
     >
-      <div className="bg-card/60 backdrop-blur-sm border border-border rounded-3xl shadow-sm">
+      <div className="bg-card/60 backdrop-blur-sm border border-border rounded-3xl">
         <div className="relative flex items-end">
           <textarea
             ref={textareaRef}

@@ -140,7 +140,7 @@ export default function CasesPage({
     <div className="min-h-screen bg-background">
       {/* Header Section */}
       <motion.div
-        className="bg-card/50"
+        className="bg-background"
         initial="hidden"
         animate="visible"
         variants={fadeInUp}
@@ -169,7 +169,7 @@ export default function CasesPage({
           variants={fadeInUp}
           transition={{ delay: 0.05 }}
         >
-          <div className="relative">
+          <div className="relative bg-sidebar rounded-lg">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
             <Input
               placeholder="Buscar asuntos por nombre, cliente o especialidad..."
@@ -201,10 +201,7 @@ export default function CasesPage({
                   }}
                 >
                   <Card
-                    className="group shadow-2xl border-0 hover:shadow-2xl transition-all duration-300 cursor-pointer bg-card/80 hover:bg-card gap-0 flex flex-col"
-                    style={{
-                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.03)'
-                    }}
+                    className="group border-0 transition-all duration-300 cursor-pointer bg-card/80 hover:bg-card gap-0 flex flex-col"
                     onClick={() => router.push(`/cases/${case_.id}`)}
                   >
                     <CardHeader className="pb-2">

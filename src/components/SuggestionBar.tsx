@@ -27,7 +27,7 @@ export function SuggestionBar({
   const [visibleCount, setVisibleCount] = useState(0);
 
   const chipClass =
-    "inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-sm bg-background/70 hover:bg-muted/70 transition-colors whitespace-nowrap";
+    "inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-sm bg-sidebar hover:bg-muted/70 transition-colors whitespace-nowrap";
 
   const recalc = useCallback(() => {
     const container = containerRef.current;

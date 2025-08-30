@@ -23,33 +23,30 @@ const LegisLogo = ({ size = "md", showText = true }: LegisLogoProps) => {
       <div className="relative">
         {/* Círculo moderno con gradiente sutil */}
         <div
-          className={`${sizeClasses[size]} bg-gradient-to-br from-legis-blue-dark to-legis-blue-light rounded-full flex items-center justify-center shadow-sm`}
+          className={`${sizeClasses[size]} bg-gradient-to-br from-legis-blue-dark to-legis-blue-light rounded-full flex items-center justify-center`}
         >
           <Scale
-            className={`${
-              size === "sm" ? "h-3 w-3" : size === "md" ? "h-4 w-4" : "h-5 w-5"
-            } text-white`}
+            className={`${size === "sm" ? "h-3 w-3" : size === "md" ? "h-4 w-4" : "h-5 w-5"
+              } text-white`}
           />
         </div>
 
         {/* Punto de IA minimalista */}
         <div
-          className={`absolute -top-0.5 -right-0.5 ${
-            size === "sm"
-              ? "h-2 w-2"
-              : size === "md"
+          className={`absolute -top-0.5 -right-0.5 ${size === "sm"
+            ? "h-2 w-2"
+            : size === "md"
               ? "h-2.5 w-2.5"
               : "h-3 w-3"
-          } bg-legis-blue-light rounded-full flex items-center justify-center`}
+            } bg-legis-blue-light rounded-full flex items-center justify-center`}
         >
           <Sparkles
-            className={`${
-              size === "sm"
-                ? "h-1 w-1"
-                : size === "md"
+            className={`${size === "sm"
+              ? "h-1 w-1"
+              : size === "md"
                 ? "h-1.5 w-1.5"
                 : "h-2 w-2"
-            } text-white fill-current`}
+              } text-white fill-current`}
           />
         </div>
       </div>

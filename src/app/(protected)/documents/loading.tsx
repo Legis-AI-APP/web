@@ -27,7 +27,7 @@ export default function Loading() {
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {Array.from({ length: 4 }).map((_, i) => (
-                        <Card key={i} className="bg-card/80 shadow-lg border-0 rounded-xl">
+                        <Card key={i} className="bg-card/80 border-0 rounded-xl">
                             <CardHeader className="pb-2">
                                 <Skeleton className="h-8 w-16 mb-2" />
                                 <Skeleton className="h-4 w-24" />
@@ -39,7 +39,7 @@ export default function Loading() {
                 {/* Documents List */}
                 <div className="space-y-4">
                     {Array.from({ length: 3 }).map((_, i) => (
-                        <Card key={i} className="bg-card/80 shadow-lg border-0 rounded-xl">
+                        <Card key={i} className="bg-card/80 border-0 rounded-xl">
                             <CardContent className="p-4">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-3 sm:space-y-0">
                                     <div className="flex items-start space-x-3">

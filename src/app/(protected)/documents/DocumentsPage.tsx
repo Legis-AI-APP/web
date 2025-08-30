@@ -140,7 +140,7 @@ export default function DocumentsPage() {
         <div className="bg-background">
             {/* Header Section */}
             <motion.div
-                className="bg-card/50"
+                className="bg-background"
                 initial="hidden"
                 animate="visible"
                 variants={fadeInUp}
@@ -169,7 +169,7 @@ export default function DocumentsPage() {
                     variants={fadeInUp}
                     transition={{ delay: 0.05 }}
                 >
-                    <div className="relative">
+                    <div className="relative bg-sidebar rounded-lg">
                         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
                         <Input
                             placeholder="Buscar documentos por nombre, cliente o caso..."
@@ -197,7 +197,7 @@ export default function DocumentsPage() {
                                     transition: { duration: 0.2 }
                                 }}
                             >
-                                <Card className="group shadow-2xl border-0 hover:shadow-2xl transition-all duration-300 bg-card/80 hover:bg-card rounded-xl">
+                                <Card className="group border-0 transition-all duration-300 bg-card/80 hover:bg-card rounded-xl">
                                     <CardContent className="px-4 py-0">
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-3 sm:space-y-0">
                                             <div className="flex items-start space-x-3">

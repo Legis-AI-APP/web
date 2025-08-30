@@ -165,7 +165,7 @@ export default function Sidebar({ chats }: SidebarProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="fixed top-2 left-2 z-50 rounded-full bg-card/60 backdrop-blur-sm shadow-sm hover:bg-card"
+              className="fixed top-2 left-2 z-50 rounded-full bg-card/60 backdrop-blur-sm hover:bg-card"
               aria-label="Abrir menú"
             >
               <Menu className="h-5 w-5" />
@@ -207,11 +207,10 @@ export default function Sidebar({ chats }: SidebarProps) {
           "h-[calc(100dvh-2rem)]", // alto flotante (con margen)
           "rounded-2xl border bg-background/85 backdrop-blur-md",
           "flex-col transition-all duration-300 ease-in-out",
+          "bg-sidebar",
           expanded ? "w-56" : "w-16"
         )}
-        style={{
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.03)'
-        }}
+
       >
         {/* Toggle */}
         <div

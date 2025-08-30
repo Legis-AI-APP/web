@@ -78,7 +78,7 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
 
   // --- UI al estilo lovable (misma paleta/clases) ---
   return (
-    <Card className="shadow-sm border rounded-soft bg-card/50 backdrop-blur-sm">
+    <Card className="border rounded-soft bg-card/50 backdrop-blur-sm">
       <CardHeader className="text-center">
         <CardTitle className="h1">
           {type === "login" ? "Iniciar Sesión" : "Crear Cuenta"}
@@ -124,11 +124,10 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
               placeholder="tu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`h-10 rounded-standard ${
-                formTouched && errors.email
-                  ? "border-red-500 focus-visible:ring-red-500"
-                  : ""
-              }`}
+              className={`h-10 rounded-standard ${formTouched && errors.email
+                ? "border-red-500 focus-visible:ring-red-500"
+                : ""
+                }`}
               required
             />
             {formTouched && errors.email && (
@@ -148,11 +147,10 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`h-10 rounded-standard ${
-                formTouched && errors.password
-                  ? "border-red-500 focus-visible:ring-red-500"
-                  : ""
-              }`}
+              className={`h-10 rounded-standard ${formTouched && errors.password
+                ? "border-red-500 focus-visible:ring-red-500"
+                : ""
+                }`}
               required
             />
             {formTouched && errors.password && (
@@ -173,11 +171,10 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className={`h-10 rounded-standard ${
-                  formTouched && errors.confirm
-                    ? "border-red-500 focus-visible:ring-red-500"
-                    : ""
-                }`}
+                className={`h-10 rounded-standard ${formTouched && errors.confirm
+                  ? "border-red-500 focus-visible:ring-red-500"
+                  : ""
+                  }`}
                 required
               />
               {formTouched && errors.confirm && (

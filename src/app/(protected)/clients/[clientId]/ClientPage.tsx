@@ -153,8 +153,7 @@ export default function ClientPage({
           variants={fadeInUp}
           transition={{ delay: 0.1 }}
         >
-          <Card className="lg:col-span-1 shadow-2xl border-0" style={{
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.03)'
+          <Card className="lg:col-span-1 border-0" style={{
           }}>
             <CardHeader className="flex flex-row items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -210,8 +209,7 @@ export default function ClientPage({
             transition={{ delay: 0.15 }}
             className="mt-6"
           >
-            <Card className="shadow-2xl border-0" style={{
-              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.03)'
+            <Card className="border-0" style={{
             }}>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -300,9 +298,8 @@ export default function ClientPage({
                 {cases.map((case_) => (
                   <motion.div key={case_.id} variants={itemVariants}>
                     <Card
-                      className="shadow-2xl border-0 hover:shadow-2xl transition-shadow cursor-pointer"
+                      className="border-0 cursor-pointer"
                       style={{
-                        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.03)'
                       }}
                       onClick={() => router.push(`/cases/${case_.id}`)}
                     >
@@ -374,8 +371,7 @@ export default function ClientPage({
                 {files.length > 0 ? (
                   files.map((doc) => (
                     <motion.div key={doc.name} variants={itemVariants}>
-                      <Card className="shadow-2xl border-0" style={{
-                        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.03)'
+                      <Card className="border-0" style={{
                       }}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
@@ -407,8 +403,7 @@ export default function ClientPage({
                   ))
                 ) : (
                   <motion.div variants={itemVariants}>
-                    <Card className="shadow-2xl border-0" style={{
-                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.03)'
+                    <Card className="border-0" style={{
                     }}>
                       <CardContent className="p-8 text-center">
                         <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -425,8 +420,7 @@ export default function ClientPage({
 
             <TabsContent value="timeline" className="space-y-4">
               <motion.div variants={itemVariants} className="space-y-4">
-                <Card className="shadow-2xl border-0" style={{
-                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.03)'
+                <Card className="border-0" style={{
                 }}>
                   <CardHeader>
                     <CardTitle className="text-foreground">Cronología de Actividades</CardTitle>
