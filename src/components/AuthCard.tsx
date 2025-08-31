@@ -78,7 +78,7 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
 
   // --- UI al estilo lovable (misma paleta/clases) ---
   return (
-    <Card className="border rounded-soft bg-card/50 backdrop-blur-sm">
+    <Card className="border rounded-soft bg-card/50 backdrop-blur-sm shadow-none">
       <CardHeader className="text-center">
         <CardTitle className="h1">
           {type === "login" ? "Iniciar Sesión" : "Crear Cuenta"}

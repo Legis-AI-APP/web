@@ -154,6 +154,7 @@ export default function ClientPage({
           transition={{ delay: 0.1 }}
         >
           <Card className="lg:col-span-1 border-0" style={{
+            boxShadow: "none"
           }}>
             <CardHeader className="flex flex-row items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -210,6 +211,7 @@ export default function ClientPage({
             className="mt-6"
           >
             <Card className="border-0" style={{
+              boxShadow: "none"
             }}>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -276,10 +278,25 @@ export default function ClientPage({
           transition={{ delay: 0.2 }}
         >
           <Tabs defaultValue="cases" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 bg-muted rounded-lg">
-              <TabsTrigger value="cases" className="rounded-lg">Asuntos</TabsTrigger>
-              <TabsTrigger value="documents" className="rounded-lg">Documentos</TabsTrigger>
-              <TabsTrigger value="timeline" className="rounded-lg">Cronología</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 bg-sidebar rounded-lg">
+              <TabsTrigger
+                value="cases"
+                className="rounded-lg data-[state=active]:bg-[var(--legis-blue-dark)] data-[state=active]:text-white data-[state=active]:shadow-sm"
+              >
+                Asuntos
+              </TabsTrigger>
+              <TabsTrigger
+                value="documents"
+                className="rounded-lg data-[state=active]:bg-[var(--legis-blue-dark)] data-[state=active]:text-white data-[state=active]:shadow-sm"
+              >
+                Documentos
+              </TabsTrigger>
+              <TabsTrigger
+                value="timeline"
+                className="rounded-lg data-[state=active]:bg-[var(--legis-blue-dark)] data-[state=active]:text-white data-[state=active]:shadow-sm"
+              >
+                Cronología
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="cases" className="space-y-6">
@@ -372,6 +389,7 @@ export default function ClientPage({
                   files.map((doc) => (
                     <motion.div key={doc.name} variants={itemVariants}>
                       <Card className="border-0" style={{
+                        boxShadow: "none"
                       }}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
@@ -404,6 +422,7 @@ export default function ClientPage({
                 ) : (
                   <motion.div variants={itemVariants}>
                     <Card className="border-0" style={{
+                      boxShadow: "none"
                     }}>
                       <CardContent className="p-8 text-center">
                         <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -421,6 +440,7 @@ export default function ClientPage({
             <TabsContent value="timeline" className="space-y-4">
               <motion.div variants={itemVariants} className="space-y-4">
                 <Card className="border-0" style={{
+                  boxShadow: "none"
                 }}>
                   <CardHeader>
                     <CardTitle className="text-foreground">Cronología de Actividades</CardTitle>

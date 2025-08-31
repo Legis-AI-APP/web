@@ -197,7 +197,7 @@ export default function DocumentsPage() {
                                     transition: { duration: 0.2 }
                                 }}
                             >
-                                <Card className="group border-0 transition-all duration-300 bg-card/80 hover:bg-card rounded-xl">
+                                <Card className="group border-0 transition-all duration-300 bg-card/80 hover:bg-card rounded-xl shadow-none">
                                     <CardContent className="px-4 py-0">
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-3 sm:space-y-0">
                                             <div className="flex items-start space-x-3">

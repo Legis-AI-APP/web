@@ -205,7 +205,7 @@ export default function Sidebar({ chats }: SidebarProps) {
         className={cn(
           "hidden md:flex fixed top-4 left-4 z-40",
           "h-[calc(100dvh-2rem)]", // alto flotante (con margen)
-          "rounded-2xl border bg-background/85 backdrop-blur-md",
+          "rounded-2xl bg-background/85 backdrop-blur-md",
           "flex-col transition-all duration-300 ease-in-out",
           "bg-sidebar",
           expanded ? "w-56" : "w-16"
