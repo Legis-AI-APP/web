@@ -1,15 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Loader } from "lucide-react";
-import AppBar from "@/components/layout/AppBar";
-import { AddDialog } from "@/components/dialog/AddDialog";
-import { Case, uploadCaseFile } from "@/lib/cases-service";
 import { useRouter } from "next/navigation";
+import { Case, uploadCaseFile } from "@/lib/cases-service";
 import { LegisFile } from "@/lib/legis-file";
+import CaseDetailPanel from "@/components/CaseDetailPanel";
+import CaseChatArea from "@/components/CaseChatArea";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function CasePage({
   oldCase,
@@ -18,69 +15,88 @@ export default function CasePage({
   oldCase: Case;
   files: LegisFile[];
 }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
   const router = useRouter();
+  const isMobile = useIsMobile();
 
-  const handleUpload = async () => {
-    if (file) {
-      setUploading(true);
-      await uploadCaseFile(oldCase.id, file);
-      setUploading(false);
-      setFile(null);
-      router.refresh();
+  // Datos del caso formateados para el panel
+  const caseData = {
+    id: oldCase.id,
+    title: oldCase.title,
+    clientName: "Cliente del Asunto", // Esto debería venir de la relación con el cliente
+    status: "En Progreso", // Esto debería venir del estado real del caso
+    partyA: "Demandante", // Esto debería venir de los datos del caso
+    partyB: "Demandado", // Esto debería venir de los datos del caso
+    matter: oldCase.title, // O una materia específica del caso
+  };
+
+  const handleBackToCases = () => {
+    router.push("/cases");
+  };
+
+  const handleBackToClient = () => {
+    // Esto debería navegar al cliente específico
+    router.push("/clients");
+  };
+
+  const handleClosePanel = () => {
+    if (isMobile) {
+      setIsPanelOpen(false);
+    }
+  };
+
+  const handleOpenPanel = () => {
+    if (isMobile) {
+      setIsPanelOpen(true);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <AppBar
-        title={`${oldCase.title}`}
-        actions={
-          <AddDialog title="Subir archivo" triggerText="Subir archivo">
-            <div className="space-y-4">
-              <Input
-                type="file"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
-              />
-              <Button
-                onClick={handleUpload}
-                disabled={uploading || !file}
-                className="w-full"
-              >
-                {uploading ? (
-                  <Loader className="w-4 h-4 animate-spin" />
-                ) : (
-                  "Subir"
-                )}
-              </Button>
-            </div>
-          </AddDialog>
-        }
-      />
+    <div className="h-screen overflow-hidden">
+      {/* En desktop: layout de dos columnas */}
+      <div className="hidden md:flex h-full">
+        {/* Panel de detalles del asunto - siempre visible en desktop */}
+        <div className="flex-shrink-0" style={{ width: '40%' }}>
+          <CaseDetailPanel
+            isOpen={true}
+            onClose={() => { }} // No se puede cerrar en desktop
+            caseData={caseData}
+            onBackToCases={handleBackToCases}
+            onBackToClient={handleBackToClient}
+            fromClient={false}
+          />
+        </div>
 
-      <div className="space-y-2">
-        <h2 className="font-semibold">Archivos del asunto</h2>
-        {files.length > 0 ? (
-          files.map((f) => (
-            <Card key={f.name}>
-              <CardContent className="p-4 text-sm">
-                <a
-                  href={f.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
-                >
-                  {f.name}
-                </a>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <p className="text-muted-foreground text-sm">
-            Este asunto aún no tiene archivos.
-          </p>
-        )}
+        {/* Área principal con chat de IA */}
+        <div className="flex-1">
+          <CaseChatArea
+            caseData={caseData}
+            isPanelOpen={isPanelOpen}
+            onOpenPanel={handleOpenPanel}
+          />
+        </div>
+      </div>
+
+      {/* En mobile: overlay */}
+      <div className="md:hidden h-full">
+        {/* Panel de detalles del asunto - overlay en mobile */}
+        <CaseDetailPanel
+          isOpen={isPanelOpen}
+          onClose={handleClosePanel}
+          caseData={caseData}
+          onBackToCases={handleBackToCases}
+          onBackToClient={handleBackToClient}
+          fromClient={false}
+        />
+
+        {/* Área principal con chat de IA */}
+        <div className="h-full">
+          <CaseChatArea
+            caseData={caseData}
+            isPanelOpen={isPanelOpen}
+            onOpenPanel={handleOpenPanel}
+          />
+        </div>
       </div>
     </div>
   );
