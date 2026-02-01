@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { logout } from "@/lib/auth-service";
+import { logout } from "@/lib/logout";
 import { Chat } from "@/lib/chats-service";
 import {
   FolderOpen as Folder,
@@ -40,7 +40,7 @@ export default function Sidebar({ chats }: SidebarProps) {
       { label: "Asuntos", icon: Folder, path: "/cases" },
       { label: "Documentos", icon: FileText, path: "/documents" },
     ],
-    []
+    [],
   );
 
   const isActive = (path: string) => {
@@ -81,7 +81,7 @@ export default function Sidebar({ chats }: SidebarProps) {
                     ? "bg-primary text-primary-foreground"
                     : "hover:bg-accent/50",
                   expanded ? null : "justify-center",
-                  isMobile ? "justify-start" : null
+                  isMobile ? "justify-start" : null,
                 )}
               >
                 <Icon className="h-4 w-4 min-w-4" />
@@ -123,7 +123,7 @@ export default function Sidebar({ chats }: SidebarProps) {
                       "w-full flex items-center gap-2 pt-2 pb-2 rounded-md text-sm transition-all duration-200 truncate px-2",
                       active
                         ? "bg-primary text-primary-foreground"
-                        : "hover:bg-accent/50"
+                        : "hover:bg-accent/50",
                     )}
                     title={chat.title}
                   >
@@ -142,7 +142,7 @@ export default function Sidebar({ chats }: SidebarProps) {
           onClick={handleLogout}
           className={cn(
             "w-full justify-center text-sm",
-            !isMobile && !expanded && "justify-center"
+            !isMobile && !expanded && "justify-center",
           )}
         >
           <LogOut className="h-4 w-4" />
@@ -178,9 +178,7 @@ export default function Sidebar({ chats }: SidebarProps) {
             <div className="pt-4 px-4 pb-2 border-b">
               <LegisLogo size="md" showText={true} />
             </div>
-            <div className="pt-4">
-              {NavContent}
-            </div>
+            <div className="pt-4">{NavContent}</div>
           </SheetContent>
         </Sheet>
       </div>
@@ -208,15 +206,16 @@ export default function Sidebar({ chats }: SidebarProps) {
           "rounded-2xl bg-background/85 backdrop-blur-md",
           "flex-col transition-all duration-300 ease-in-out",
           "bg-sidebar",
-          expanded ? "w-56" : "w-16"
+          expanded ? "w-56" : "w-16",
         )}
-
       >
         {/* Toggle */}
         <div
           className={cn(
             "pt-2 px-2",
-            expanded ? "flex justify-between items-center" : "flex justify-center"
+            expanded
+              ? "flex justify-between items-center"
+              : "flex justify-center",
           )}
         >
           {expanded && (

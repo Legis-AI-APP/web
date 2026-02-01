@@ -1,5 +1,7 @@
-import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
+"use server";
+
 import { apiUrl } from "./api";
+import { cookies } from "next/headers";
 
 export type Chat = {
   id: string;
@@ -13,41 +15,49 @@ export type ChatMessage = {
   content: string;
 };
 
-export const getChats = async (
-  headers: ReadonlyHeaders
-): Promise<Omit<Chat, "messages">[] | Response> => {
-  const response = await fetch(`${apiUrl}/api/chats`, {
-    headers,
-  });
-  console.log("Fetching chats from:", `${apiUrl}/api/chats`);
-  console.log(response.status, response.statusText);
+export const getChats = async () => {
+  const requestCookies = await cookies();
+  const token = requestCookies.get("session")?.value || "";
 
-  if (!response.ok) return response;
-  return response.json();
+  const response = await fetch(`${apiUrl}/api/chats`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) throw new Error(await response.json());
+  return response.json() as Promise<Omit<Chat, "messages">[]>;
 };
 
-export const getChat = async (
-  chatId: string,
-  headers: ReadonlyHeaders
-): Promise<Chat> => {
+export const getChat = async (chatId: string) => {
+  const requestCookies = await cookies();
+  const token = requestCookies.get("session")?.value || "";
+
   const response = await fetch(`${apiUrl}/api/chats/${chatId}`, {
     method: "GET",
-    headers,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!response.ok) {
-    throw new Error("Error al obtener el chat");
+    throw new Error(await response.json());
   }
 
-  return response.json();
+  return response.json() as Promise<Chat>;
 };
 
-export const createChat = async (): Promise<{ chat_id: string } | Response> => {
-  const response = await fetch(`/api/chats`, {
+export const createChat = async () => {
+  const requestCookies = await cookies();
+  const token = requestCookies.get("session")?.value || "";
+
+  const response = await fetch(`${apiUrl}/api/chats`, {
     method: "POST",
-    credentials: "include",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
-  if (!response.ok) return response;
-  return response.json();
+  if (!response.ok) throw new Error(await response.json());
+  return response.json() as Promise<{ chat_id: string }>;
 };

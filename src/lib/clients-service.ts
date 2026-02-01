@@ -1,6 +1,8 @@
-import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
+"use server";
+
 import { LegisFile } from "./legis-file";
 import { apiUrl } from "./api";
+import { cookies } from "next/headers";
 
 export interface Client {
   id: string;
@@ -13,23 +15,24 @@ export interface Client {
   address: string;
 }
 
-export const getClients = async (headers: ReadonlyHeaders) => {
-  const cookieHeader = headers.get("cookie") || "";
-
+export const getClients = async () => {
+  const requestCookies = await cookies();
+  const token = requestCookies.get("session")?.value || "";
   const response = await fetch(`${apiUrl}/api/clients`, {
     headers: {
-      Cookie: cookieHeader,
+      Authorization: token ? `Bearer ${token}` : "",
     },
   });
   if (!response.ok) throw new Error(await response.json());
   return response.json() as Promise<Client[]>;
 };
 
-export const getClient = async (clientId: string, headers: ReadonlyHeaders) => {
-  const cookieHeader = headers.get("cookie") || "";
+export const getClient = async (clientId: string) => {
+  const requestCookies = await cookies();
+  const token = requestCookies.get("session")?.value || "";
   const response = await fetch(`${apiUrl}/api/clients/${clientId}`, {
     headers: {
-      Cookie: cookieHeader,
+      Authorization: token ? `Bearer ${token}` : "",
     },
   });
   if (!response.ok) throw new Error(await response.json());
@@ -37,26 +40,26 @@ export const getClient = async (clientId: string, headers: ReadonlyHeaders) => {
 };
 
 export const createClient = async (client: Omit<Client, "id">) => {
-  const response = await fetch(`/api/clients`, {
+  const requestCookies = await cookies();
+  const token = requestCookies.get("session")?.value || "";
+  const response = await fetch(`${apiUrl}/api/clients`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: token ? `Bearer ${token}` : "",
     },
-    credentials: "include",
     body: JSON.stringify(client),
   });
   if (!response.ok) throw new Error(await response.json());
   return response.json() as Promise<Client>;
 };
 
-export const getClientFiles = async (
-  caseId: string,
-  headers: ReadonlyHeaders
-) => {
-  const cookieHeader = headers.get("cookie") || "";
+export const getClientFiles = async (caseId: string) => {
+  const requestCookies = await cookies();
+  const token = requestCookies.get("session")?.value || "";
   const response = await fetch(`${apiUrl}/api/clients/${caseId}/files`, {
     headers: {
-      Cookie: cookieHeader,
+      Authorization: `Bearer ${token}`,
     },
   });
   if (!response.ok) throw new Error(await response.json());
@@ -64,11 +67,15 @@ export const getClientFiles = async (
 };
 
 export async function uploadClientFile(clientId: string, file: File) {
+  const requestCookies = await cookies();
+  const token = requestCookies.get("session")?.value || "";
   const form = new FormData();
   form.append("file", file);
-  await fetch(`/api/clients/${clientId}/upload`, {
+  await fetch(`${apiUrl}/api/clients/${clientId}/upload`, {
     method: "POST",
     body: form,
-    credentials: "include",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 }
