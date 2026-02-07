@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,14 +11,10 @@ import {
     ArrowLeft,
     Plus,
     Calendar,
-    FileText,
-    Clock,
-    StickyNote,
     Eye,
     Download,
     X
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface CaseDetailPanelProps {
     isOpen: boolean;
@@ -173,8 +169,6 @@ export default function CaseDetailPanel({
 }: CaseDetailPanelProps) {
     const isMobile = useIsMobile();
     const [isResizing, setIsResizing] = useState(false);
-    const [panelWidth, setPanelWidth] = useState(40); // Porcentaje del ancho
-    const panelRef = useRef<HTMLDivElement>(null);
     const resizeRef = useRef<HTMLDivElement>(null);
 
     // Manejar redimensionamiento
@@ -182,12 +176,7 @@ export default function CaseDetailPanel({
         const handleMouseMove = (e: MouseEvent) => {
             if (!isResizing || isMobile) return;
 
-            const containerWidth = window.innerWidth;
-            const newWidth = (e.clientX / containerWidth) * 100;
-
-            if (newWidth >= 40 && newWidth <= 45) {
-                setPanelWidth(newWidth);
-            }
+            void e;
         };
 
         const handleMouseUp = () => {
@@ -427,7 +416,6 @@ export default function CaseDetailPanel({
                 onClick={onClose}
             >
                 <motion.div
-                    ref={panelRef}
                     initial={{ x: "-100%" }}
                     animate={{ x: 0 }}
                     exit={{ x: "-100%" }}
