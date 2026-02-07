@@ -77,7 +77,7 @@ export default function ChatPage({ chatId, initialMessages }: Props) {
         setLoading(false);
       }
     },
-    [chatId, question]
+    [chatId, question, searchParams]
   );
 
   useEffect(() => {
