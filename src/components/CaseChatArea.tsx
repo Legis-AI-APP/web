@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SuggestionBar } from "@/components/SuggestionBar";
 import ChatInput from "@/components/chat/ChatInput";
-import { useRouter } from "next/navigation";
-import { createChat } from "@/lib/chats-service";
 import { toast } from "sonner";
+import MessageBubble from "@/components/chat/MessageBubble";
+import type { ChatMessage } from "@/lib/chats-service";
+import { askGeminiStream } from "@/lib/ask-gemini-stream";
 import {
     MessageSquare,
     Bot,
@@ -35,7 +36,13 @@ interface CaseChatAreaProps {
 export default function CaseChatArea({ caseData, onOpenPanel }: CaseChatAreaProps) {
     const [message, setMessage] = useState("");
     const [submitting, setSubmitting] = useState(false);
-    const router = useRouter();
+    const [chatId, setChatId] = useState<string | null>(null);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
+
+    const bufferRef = useRef<string[]>([]);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const bottomRef = useRef<HTMLDivElement | null>(null);
+
     const isMobile = useIsMobile();
 
     // Sugerencias contextualizadas al asunto
@@ -53,33 +60,85 @@ export default function CaseChatArea({ caseData, onOpenPanel }: CaseChatAreaProp
 
     const handleSuggestionClick = (s: string) => setMessage(s);
 
-    const handleSend = async (e?: React.FormEvent) => {
+    const ensureCaseChat = useCallback(async (): Promise<string> => {
+        if (chatId) return chatId;
+
+        const res = await fetch(`/api/cases/${caseData.id}/chats`, {
+            method: "POST",
+            credentials: "include",
+        });
+        if (!res.ok) throw new Error("No se pudo crear el chat del caso");
+        const data = (await res.json()) as { chat_id: string };
+        setChatId(data.chat_id);
+        return data.chat_id;
+    }, [caseData.id, chatId]);
+
+    const handleSend = useCallback(async (e?: React.FormEvent) => {
         e?.preventDefault();
         const prompt = message.trim();
         if (!prompt || submitting) return;
 
         setSubmitting(true);
+        bufferRef.current = [];
+
+        const userMessage: ChatMessage = {
+            id: crypto.randomUUID(),
+            role: "user",
+            content: prompt,
+        };
+
+        setMessages((prev) => [...prev, userMessage]);
+        setMessage("");
+
         try {
-            // Crear contexto del asunto para la IA
-            const contextualPrompt = `[CONTEXTO DEL ASUNTO]
-Caso: ${caseData.partyA} c/ ${caseData.partyB} s/ ${caseData.matter}
-Cliente: ${caseData.clientName}
-Estado: ${caseData.status}
-
-[CONSULTA DEL USUARIO]
-${prompt}`;
-
-            const chat = await createChat();
-            if (chat instanceof Response) {
-                throw new Error(`Error creating chat: ${chat.statusText}`);
-            }
-            router.push(`/chat/${chat.chat_id}?prompt=${encodeURIComponent(contextualPrompt)}`);
-        } catch {
-            toast.error("Error al crear la conversación");
+            const activeChatId = await ensureCaseChat();
+            await askGeminiStream(
+                prompt,
+                (chunk) => {
+                    bufferRef.current.push(chunk);
+                },
+                activeChatId,
+                `/api/ai/ask/case/${caseData.id}`
+            );
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Error al consultar la IA";
+            toast.error(message);
         } finally {
             setSubmitting(false);
         }
-    };
+    }, [caseData.id, ensureCaseChat, message, submitting]);
+
+    useEffect(() => {
+        intervalRef.current = setInterval(() => {
+            const next = bufferRef.current.shift();
+            if (next) {
+                setMessages((prev) => {
+                    const last = prev[prev.length - 1];
+                    if (last?.role === "assistant") {
+                        const updated = [...prev];
+                        updated[updated.length - 1] = {
+                            ...last,
+                            content: last.content + next,
+                        };
+                        return updated;
+                    }
+
+                    return [
+                        ...prev,
+                        { id: crypto.randomUUID(), role: "assistant", content: next },
+                    ];
+                });
+            }
+        }, 15);
+
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
+    }, []);
+
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
 
     const fadeIn: Variants = {
         initial: { opacity: 0 },
@@ -136,62 +195,95 @@ ${prompt}`;
             </motion.div>
 
             {/* Área principal del chat */}
-            <div className="flex-1 flex flex-col justify-center px-6 py-8">
-                <div className="max-w-4xl mx-auto w-full space-y-8">
-                    {/* Información del caso */}
-                    <motion.div
-                        className="text-center space-y-4"
-                        initial="initial"
-                        animate="animate"
-                        variants={fadeIn}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                    >
-                        <div className="space-y-2">
-                            <h2 className="text-2xl sm:text-3xl font-medium text-foreground">
-                                ¿Cómo puedo ayudarte con este caso?
-                            </h2>
-                            <p className="text-muted-foreground text-lg">
-                                {caseData.partyA} c/ {caseData.partyB} s/ {caseData.matter}
-                            </p>
+            <div className="flex-1 flex flex-col px-6 py-6">
+                <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col">
+                    {messages.length === 0 ? (
+                        <motion.div
+                            className="text-center space-y-8 flex-1 flex flex-col justify-center"
+                            initial="initial"
+                            animate="animate"
+                            variants={fadeIn}
+                            transition={{ duration: 0.6, ease: "easeOut" }}
+                        >
+                            <div className="space-y-2">
+                                <h2 className="text-2xl sm:text-3xl font-medium text-foreground">
+                                    ¿Cómo puedo ayudarte con este caso?
+                                </h2>
+                                <p className="text-muted-foreground text-lg">
+                                    {caseData.partyA} c/ {caseData.partyB} s/ {caseData.matter}
+                                </p>
+                            </div>
+
+                            {/* Cards de información rápida */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                                <Card className="p-4">
+                                    <CardContent className="p-0">
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <Users className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-muted-foreground">Cliente:</span>
+                                            <span className="font-medium">{caseData.clientName}</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="p-4">
+                                    <CardContent className="p-0">
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <FileText className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-muted-foreground">Materia:</span>
+                                            <span className="font-medium">{caseData.matter}</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="p-4">
+                                    <CardContent className="p-0">
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-muted-foreground">Estado:</span>
+                                            <span className="font-medium">{caseData.status}</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            {/* Sugerencias contextualizadas */}
+                            <motion.div
+                                initial="initial"
+                                animate="animate"
+                                variants={upIn}
+                                transition={{ delay: 0.2 }}
+                            >
+                                <SuggestionBar
+                                    items={suggestions}
+                                    onPick={handleSuggestionClick}
+                                    className="max-w-4xl mx-auto"
+                                />
+                            </motion.div>
+
+                            {/* Nota informativa */}
+                            <motion.p
+                                className="text-center text-xs text-muted-foreground max-w-2xl mx-auto"
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3, duration: 0.35 }}
+                            >
+                                La IA usa el contexto del caso y tus documentos. Preguntá por estrategias legales,
+                                próximos pasos o riesgos.
+                            </motion.p>
+                        </motion.div>
+                    ) : (
+                        <div className="flex-1 overflow-y-auto px-0 py-2 space-y-4">
+                            {messages.map((msg) => (
+                                <MessageBubble key={msg.id} role={msg.role} content={msg.content} />
+                            ))}
+                            <div ref={bottomRef} />
                         </div>
-
-                        {/* Cards de información rápida */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
-                            <Card className="p-4">
-                                <CardContent className="p-0">
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <Users className="h-4 w-4 text-muted-foreground" />
-                                        <span className="text-muted-foreground">Cliente:</span>
-                                        <span className="font-medium">{caseData.clientName}</span>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            <Card className="p-4">
-                                <CardContent className="p-0">
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <FileText className="h-4 w-4 text-muted-foreground" />
-                                        <span className="text-muted-foreground">Materia:</span>
-                                        <span className="font-medium">{caseData.matter}</span>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            <Card className="p-4">
-                                <CardContent className="p-0">
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                                        <span className="text-muted-foreground">Estado:</span>
-                                        <span className="font-medium">{caseData.status}</span>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </motion.div>
+                    )}
 
                     {/* Input del chat */}
                     <motion.div
-                        className="max-w-4xl mx-auto w-full"
+                        className="w-full mt-4"
                         initial="initial"
                         animate="animate"
                         variants={upIn}
@@ -204,31 +296,6 @@ ${prompt}`;
                             disabled={submitting}
                         />
                     </motion.div>
-
-                    {/* Sugerencias contextualizadas */}
-                    <motion.div
-                        initial="initial"
-                        animate="animate"
-                        variants={upIn}
-                        transition={{ delay: 0.2 }}
-                    >
-                        <SuggestionBar
-                            items={suggestions}
-                            onPick={handleSuggestionClick}
-                            className="max-w-4xl mx-auto"
-                        />
-                    </motion.div>
-
-                    {/* Nota informativa */}
-                    <motion.p
-                        className="text-center text-xs text-muted-foreground max-w-2xl mx-auto"
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3, duration: 0.35 }}
-                    >
-                        La IA tiene acceso al contexto completo del asunto. Puedes preguntar sobre estrategias legales,
-                        documentos necesarios, próximos pasos o cualquier aspecto específico del caso.
-                    </motion.p>
                 </div>
             </div>
 
