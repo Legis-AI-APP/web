@@ -3,14 +3,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import ChatInput from "@/components/chat/ChatInput";
-import MessageBubble from "@/components/chat/MessageBubble";
-import { SuggestionBar } from "@/components/SuggestionBar";
 import { toast } from "sonner";
-import { Bot, Menu, Users } from "lucide-react";
+import { Bot, Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { ChatMessage } from "@/lib/chats-service";
 import { askGeminiStream } from "@/lib/ask-gemini-stream";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationEmptyState,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation";
+import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
+import {
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputFooter,
+  PromptInputButton,
+} from "@/components/ai-elements/prompt-input";
 
 interface ClientChatAreaProps {
   client: {
@@ -32,7 +42,6 @@ export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaPr
 
   const bufferRef = useRef<string[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const isMobile = useIsMobile();
 
@@ -61,10 +70,9 @@ export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaPr
   }, [chatId, client.id]);
 
   const handleSend = useCallback(
-    async (e?: React.FormEvent) => {
-      e?.preventDefault();
-      const prompt = message.trim();
-      if (!prompt || submitting) return;
+    async (prompt: string) => {
+      const content = prompt.trim();
+      if (!content || submitting) return;
 
       setSubmitting(true);
       bufferRef.current = [];
@@ -72,16 +80,15 @@ export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaPr
       const userMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: "user",
-        content: prompt,
+        content,
       };
 
       setMessages((prev) => [...prev, userMessage]);
-      setMessage("");
 
       try {
         const activeChatId = await ensureClientChat();
         await askGeminiStream(
-          prompt,
+          content,
           (chunk) => {
             bufferRef.current.push(chunk);
           },
@@ -95,7 +102,7 @@ export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaPr
         setSubmitting(false);
       }
     },
-    [client.id, ensureClientChat, message, submitting]
+    [client.id, ensureClientChat, submitting]
   );
 
   useEffect(() => {
@@ -119,23 +126,11 @@ export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaPr
     };
   }, []);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
   const fadeIn: Variants = { initial: { opacity: 0 }, animate: { opacity: 1 } };
-  const upIn: Variants = {
-    initial: { opacity: 0, y: 8, filter: "blur(2px)" },
-    animate: {
-      opacity: 1,
-      y: 0,
-      filter: "blur(0px)",
-      transition: { type: "spring", stiffness: 160, damping: 18 },
-    },
-  };
 
   return (
     <div className="flex flex-col h-[calc(100vh-260px)] min-h-[520px]">
+      {/* Header */}
       <motion.div
         className="bg-background/80 backdrop-blur-sm border-b px-4 py-3"
         initial="initial"
@@ -157,54 +152,62 @@ export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaPr
           </div>
 
           {isMobile && onOpenPanel && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onOpenPanel}
-              className="h-9 w-9"
-            >
+            <Button variant="ghost" size="icon" onClick={onOpenPanel} className="h-9 w-9">
               <Menu className="h-5 w-5" />
             </Button>
           )}
         </div>
       </motion.div>
 
-      <div className="flex-1 flex flex-col px-4 py-4">
-        {messages.length === 0 ? (
-          <motion.div
-            className="flex-1 flex flex-col justify-center gap-6"
-            initial="initial"
-            animate="animate"
-            variants={fadeIn}
+      {/* Conversation */}
+      <div className="flex-1 flex flex-col">
+        <Conversation className="flex-1">
+          <ConversationContent>
+            {messages.length === 0 ? (
+              <ConversationEmptyState
+                title="¿Qué querés revisar de este cliente?"
+                description={suggestions[0]}
+              />
+            ) : (
+              messages.map((m) => (
+                <Message key={m.id} from={m.role}>
+                  <MessageContent>
+                    {m.role === "assistant" ? (
+                      <MessageResponse>{m.content}</MessageResponse>
+                    ) : (
+                      m.content
+                    )}
+                  </MessageContent>
+                </Message>
+              ))
+            )}
+          </ConversationContent>
+          <ConversationScrollButton />
+        </Conversation>
+
+        {/* Input */}
+        <div className="border-t bg-background px-4 py-3">
+          <PromptInput
+            onSubmit={({ text }) => {
+              if (!text) return;
+              setMessage("");
+              return handleSend(text);
+            }}
           >
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <span>
-                Consultas sobre el cliente y sus documentos ({client.document_type}: {client.document})
-              </span>
-            </div>
-
-            <motion.div variants={upIn}>
-              <SuggestionBar items={suggestions} onPick={setMessage} />
-            </motion.div>
-          </motion.div>
-        ) : (
-          <div className="flex-1 overflow-y-auto space-y-4">
-            {messages.map((msg) => (
-              <MessageBubble key={msg.id} role={msg.role} content={msg.content} />
-            ))}
-            <div ref={bottomRef} />
-          </div>
-        )}
-
-        <motion.div variants={upIn} className="mt-4">
-          <ChatInput
-            value={message}
-            onChange={setMessage}
-            onSubmit={handleSend}
-            disabled={submitting}
-          />
-        </motion.div>
+            <PromptInputTextarea
+              value={message}
+              onChange={(e) => setMessage(e.currentTarget.value)}
+              placeholder="Escribí tu consulta..."
+              disabled={submitting}
+            />
+            <PromptInputFooter>
+              <div className="flex-1" />
+              <PromptInputButton type="submit" disabled={submitting || message.trim().length === 0}>
+                Enviar
+              </PromptInputButton>
+            </PromptInputFooter>
+          </PromptInput>
+        </div>
       </div>
     </div>
   );
