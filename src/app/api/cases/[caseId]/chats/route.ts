@@ -1,11 +1,8 @@
 import { NextRequest } from "next/server";
+import { apiUrl } from "@/lib/api";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function apiUrl() {
-  return process.env.API_URL || "http://localhost:8080";
-}
 
 export async function POST(
   req: NextRequest,
@@ -16,7 +13,7 @@ export async function POST(
 
   const { caseId } = await params;
 
-  const upstream = await fetch(`${apiUrl()}/api/cases/${caseId}/chats`, {
+  const upstream = await fetch(`${apiUrl}/api/cases/${caseId}/chats`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -39,7 +36,7 @@ export async function GET(
 
   const { caseId } = await params;
 
-  const upstream = await fetch(`${apiUrl()}/api/cases/${caseId}/chats`, {
+  const upstream = await fetch(`${apiUrl}/api/cases/${caseId}/chats`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
