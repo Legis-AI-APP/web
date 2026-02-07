@@ -1,9 +1,10 @@
 export async function askGeminiStream(
   prompt: string,
   onMessage: (chunk: string) => void,
-  chatId?: string
+  chatId?: string,
+  endpoint: string = "/api/ai/ask"
 ): Promise<void> {
-  const response = await fetch(`/api/ai/ask`, {
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
