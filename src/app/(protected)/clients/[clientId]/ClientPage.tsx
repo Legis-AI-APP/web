@@ -6,13 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader, User, Phone, Mail, MapPin, FolderOpen, FileText, Calendar, Edit, Download, Plus, Users } from 'lucide-react';
+import { Loader, User, Phone, Mail, MapPin, FolderOpen, FileText, Calendar, Edit, Download, Plus, Users, MessageSquare } from 'lucide-react';
 import { AddDialog } from "@/components/dialog/AddDialog";
 import AddCaseDialog from "@/components/dialog/AddCaseDialog";
 import { Client, uploadClientFile } from "@/lib/clients-service";
 import { useRouter } from "next/navigation";
 import { LegisFile } from "@/lib/legis-file";
 import { motion, Variants } from "framer-motion";
+import ClientChatArea from "@/components/ClientChatArea";
 
 export default function ClientPage({
   client,
@@ -278,7 +279,7 @@ export default function ClientPage({
           transition={{ delay: 0.2 }}
         >
           <Tabs defaultValue="cases" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 bg-sidebar rounded-lg">
+            <TabsList className="grid w-full grid-cols-4 bg-sidebar rounded-lg">
               <TabsTrigger
                 value="cases"
                 className="rounded-lg data-[state=active]:bg-[var(--legis-blue-dark)] data-[state=active]:text-white data-[state=active]:shadow-sm"
@@ -296,6 +297,15 @@ export default function ClientPage({
                 className="rounded-lg data-[state=active]:bg-[var(--legis-blue-dark)] data-[state=active]:text-white data-[state=active]:shadow-sm"
               >
                 Cronología
+              </TabsTrigger>
+              <TabsTrigger
+                value="chat"
+                className="rounded-lg data-[state=active]:bg-[var(--legis-blue-dark)] data-[state=active]:text-white data-[state=active]:shadow-sm"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Chat
+                </span>
               </TabsTrigger>
             </TabsList>
 
@@ -462,6 +472,10 @@ export default function ClientPage({
                   </CardContent>
                 </Card>
               </motion.div>
+            </TabsContent>
+
+            <TabsContent value="chat" className="space-y-4">
+              <ClientChatArea client={client} />
             </TabsContent>
           </Tabs>
         </motion.div>
