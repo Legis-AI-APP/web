@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -15,6 +15,8 @@ import {
     Download,
     X
 } from "lucide-react";
+import type { CaseEventDto, CaseEventType } from "@/lib/case-events";
+import type { LegisFile } from "@/lib/legis-file";
 
 interface CaseDetailPanelProps {
     isOpen: boolean;
@@ -33,95 +35,27 @@ interface CaseDetailPanelProps {
     fromClient?: boolean;
 }
 
-// Mock data para los diferentes tabs
-const mockMovements = [
-    {
-        id: '1',
-        date: '2024-01-15',
-        description: 'Presentación de demanda',
-        status: 'Completado'
-    },
-    {
-        id: '2',
-        date: '2024-01-20',
-        description: 'Notificación a la contraparte',
-        status: 'En Progreso'
-    },
-    {
-        id: '3',
-        date: '2024-02-01',
-        description: 'Audiencia preliminar',
-        status: 'Pendiente'
+const statusLabel = (s?: string | null) => {
+    switch ((s ?? "").toUpperCase()) {
+        case "DONE":
+            return "Completado";
+        case "SCHEDULED":
+            return "Programada";
+        case "URGENT":
+            return "Urgente";
+        case "PENDING":
+            return "Pendiente";
+        default:
+            return s ?? "";
     }
-];
+};
 
-const mockDocuments = [
-    {
-        id: '1',
-        name: 'Demanda Principal.pdf',
-        type: 'Demanda',
-        status: 'Procesado',
-        size: '2.4 MB'
-    },
-    {
-        id: '2',
-        name: 'Contrato Base.docx',
-        type: 'Contrato',
-        status: 'Pendiente',
-        size: '1.8 MB'
-    },
-    {
-        id: '3',
-        name: 'Acta de Audiencia.pdf',
-        type: 'Acta',
-        status: 'Archivado',
-        size: '1.2 MB'
-    }
-];
-
-const mockDates = [
-    {
-        id: '1',
-        type: 'audiencia',
-        title: 'Audiencia Preliminar',
-        date: '2024-02-15',
-        time: '09:00',
-        status: 'Pendiente'
-    },
-    {
-        id: '2',
-        type: 'vencimiento',
-        title: 'Vencimiento de Pruebas',
-        date: '2024-02-20',
-        time: '23:59',
-        status: 'Urgente'
-    },
-    {
-        id: '3',
-        type: 'audiencia',
-        title: 'Audiencia de Pruebas',
-        date: '2024-03-01',
-        time: '10:30',
-        status: 'Programada'
-    }
-];
-
-const mockNotes = [
-    {
-        id: '1',
-        content: 'Cliente muy colaborativo, proporcionó toda la documentación necesaria',
-        author: 'Dr. García',
-        date: '2024-01-15',
-        time: '14:30'
-    },
-    {
-        id: '2',
-        content: 'Revisar cláusula 3.2 del contrato - posible ambigüedad',
-        author: 'Dr. García',
-        date: '2024-01-18',
-        time: '11:15'
-    }
-];
+const typeToTab: Record<CaseEventType, "movements" | "documents" | "dates" | "notes"> = {
+    MOVEMENT: "movements",
+    DOCUMENT: "documents",
+    DATE: "dates",
+    NOTE: "notes",
+};
 
 const getStatusBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
@@ -171,6 +105,65 @@ export default function CaseDetailPanel({
     const [isResizing, setIsResizing] = useState(false);
     const resizeRef = useRef<HTMLDivElement>(null);
 
+    const [events, setEvents] = useState<CaseEventDto[]>([]);
+    const [files, setFiles] = useState<LegisFile[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        let cancelled = false;
+        const run = async () => {
+            setLoading(true);
+            try {
+                const [eventsRes, filesRes] = await Promise.all([
+                    fetch(`/api/cases/${caseData.id}/events`, { credentials: "include" }),
+                    fetch(`/api/cases/${caseData.id}/files`, { credentials: "include" }),
+                ]);
+
+                if (!eventsRes.ok) throw new Error("No se pudieron cargar los eventos del caso");
+                if (!filesRes.ok) throw new Error("No se pudieron cargar los documentos del caso");
+
+                const eventsJson = (await eventsRes.json()) as CaseEventDto[];
+                const filesJson = (await filesRes.json()) as LegisFile[];
+
+                if (!cancelled) {
+                    setEvents(eventsJson);
+                    setFiles(filesJson);
+                }
+            } catch { 
+                // Mantener UI usable aunque falle
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        };
+
+        void run();
+        return () => {
+            cancelled = true;
+        };
+    }, [caseData.id]);
+
+    const eventsByTab = useMemo(() => {
+        const acc: Record<string, CaseEventDto[]> = {
+            movements: [],
+            documents: [],
+            dates: [],
+            notes: [],
+        };
+        for (const e of events) {
+            const t = e.type ?? null;
+            if (t && typeToTab[t]) {
+                acc[typeToTab[t]].push(e);
+            }
+        }
+        return acc;
+    }, [events]);
+
+    const fileCards = files.map((f, idx) => ({
+        id: `${idx}-${f.name}`,
+        name: f.name,
+        url: f.url,
+    }));
+
     // Manejar redimensionamiento
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -213,22 +206,32 @@ export default function CaseDetailPanel({
                     </Button>
                 </div>
                 <div className="space-y-2">
-                    {mockMovements.map((movement) => (
-                        <Card key={movement.id} className="p-3">
-                            <div className="flex justify-between items-start">
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium">{movement.description}</p>
-                                    <p className="text-xs text-muted-foreground">{movement.date}</p>
-                                </div>
-                                <Badge
-                                    variant={getStatusBadgeVariant(movement.status)}
-                                    className={getStatusColor(movement.status)}
-                                >
-                                    {movement.status}
-                                </Badge>
-                            </div>
+                    {eventsByTab.movements.length === 0 ? (
+                        <Card className="p-3">
+                            <p className="text-sm text-muted-foreground">
+                                {loading ? "Cargando..." : "No hay movimientos aún"}
+                            </p>
                         </Card>
-                    ))}
+                    ) : (
+                        eventsByTab.movements.map((movement) => (
+                            <Card key={movement.id} className="p-3">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <p className="text-sm font-medium">{movement.title}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {movement.event_at ? new Date(movement.event_at).toLocaleString("es-AR") : movement.created_at}
+                                        </p>
+                                    </div>
+                                    <Badge
+                                        variant={getStatusBadgeVariant(statusLabel(movement.status))}
+                                        className={getStatusColor(statusLabel(movement.status))}
+                                    >
+                                        {statusLabel(movement.status) || "-"}
+                                    </Badge>
+                                </div>
+                            </Card>
+                        ))
+                    )}
                 </div>
             </TabsContent>
 
@@ -242,36 +245,47 @@ export default function CaseDetailPanel({
                     </Button>
                 </div>
                 <div className="space-y-2">
-                    {mockDocuments.map((doc) => (
-                        <Card key={doc.id} className="p-3">
-                            <div className="flex justify-between items-start">
-                                <div className="space-y-1 flex-1">
-                                    <p className="text-sm font-medium">{doc.name}</p>
-                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                        <span>{doc.type}</span>
-                                        <span>•</span>
-                                        <span>{doc.size}</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Badge
-                                        variant={getStatusBadgeVariant(doc.status)}
-                                        className={getStatusColor(doc.status)}
-                                    >
-                                        {doc.status}
-                                    </Badge>
-                                    <div className="flex gap-1">
-                                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                                            <Eye className="h-4 w-4" />
-                                        </Button>
-                                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                                            <Download className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
+                    {fileCards.length === 0 ? (
+                        <Card className="p-3">
+                            <p className="text-sm text-muted-foreground">
+                                {loading ? "Cargando..." : "No hay documentos aún"}
+                            </p>
                         </Card>
-                    ))}
+                    ) : (
+                        fileCards.map((doc) => (
+                            <Card key={doc.id} className="p-3">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1 flex-1">
+                                        <p className="text-sm font-medium">{doc.name}</p>
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                            <span>Archivo</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Badge variant="secondary">Disponible</Badge>
+                                        <div className="flex gap-1">
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-8 w-8 p-0"
+                                                onClick={() => window.open(doc.url, "_blank")}
+                                            >
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-8 w-8 p-0"
+                                                onClick={() => window.open(doc.url, "_blank")}
+                                            >
+                                                <Download className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
+                        ))
+                    )}
                 </div>
             </TabsContent>
 
@@ -285,25 +299,37 @@ export default function CaseDetailPanel({
                     </Button>
                 </div>
                 <div className="space-y-2">
-                    {mockDates.map((date) => (
-                        <Card key={date.id} className="p-3">
-                            <div className="flex justify-between items-start">
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium">{date.title}</p>
-                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                        <Calendar className="h-3 w-3" />
-                                        <span>{date.date} a las {date.time}</span>
-                                    </div>
-                                </div>
-                                <Badge
-                                    variant={getStatusBadgeVariant(date.status)}
-                                    className={getStatusColor(date.status)}
-                                >
-                                    {date.status}
-                                </Badge>
-                            </div>
+                    {eventsByTab.dates.length === 0 ? (
+                        <Card className="p-3">
+                            <p className="text-sm text-muted-foreground">
+                                {loading ? "Cargando..." : "No hay fechas aún"}
+                            </p>
                         </Card>
-                    ))}
+                    ) : (
+                        eventsByTab.dates.map((date) => (
+                            <Card key={date.id} className="p-3">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <p className="text-sm font-medium">{date.title}</p>
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                            <Calendar className="h-3 w-3" />
+                                            <span>
+                                                {date.event_at
+                                                    ? new Date(date.event_at).toLocaleString("es-AR")
+                                                    : new Date(date.created_at).toLocaleString("es-AR")}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <Badge
+                                        variant={getStatusBadgeVariant(statusLabel(date.status))}
+                                        className={getStatusColor(statusLabel(date.status))}
+                                    >
+                                        {statusLabel(date.status) || "-"}
+                                    </Badge>
+                                </div>
+                            </Card>
+                        ))
+                    )}
                 </div>
             </TabsContent>
 
@@ -317,17 +343,27 @@ export default function CaseDetailPanel({
                     </Button>
                 </div>
                 <div className="space-y-2">
-                    {mockNotes.map((note) => (
-                        <Card key={note.id} className="p-3">
-                            <div className="space-y-2">
-                                <p className="text-sm">{note.content}</p>
-                                <div className="flex justify-between items-center text-xs text-muted-foreground">
-                                    <span>{note.author}</span>
-                                    <span>{note.date} {note.time}</span>
-                                </div>
-                            </div>
+                    {eventsByTab.notes.length === 0 ? (
+                        <Card className="p-3">
+                            <p className="text-sm text-muted-foreground">
+                                {loading ? "Cargando..." : "No hay notas aún"}
+                            </p>
                         </Card>
-                    ))}
+                    ) : (
+                        eventsByTab.notes.map((note) => (
+                            <Card key={note.id} className="p-3">
+                                <div className="space-y-2">
+                                    <p className="text-sm">{note.description || note.title}</p>
+                                    <div className="flex justify-between items-center text-xs text-muted-foreground">
+                                        <span>{note.title}</span>
+                                        <span>
+                                            {new Date(note.created_at).toLocaleString("es-AR")}
+                                        </span>
+                                    </div>
+                                </div>
+                            </Card>
+                        ))
+                    )}
                 </div>
             </TabsContent>
         </>
