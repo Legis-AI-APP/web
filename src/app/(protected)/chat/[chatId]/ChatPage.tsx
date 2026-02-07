@@ -51,12 +51,24 @@ export default function ChatPage({ chatId, initialMessages }: Props) {
       if (!input) setQuestion("");
 
       try {
+        const scope = searchParams.get("scope");
+        const caseId = searchParams.get("caseId");
+        const clientId = searchParams.get("clientId");
+
+        const endpoint =
+          scope === "case" && caseId
+            ? `/api/ai/ask/case/${caseId}`
+            : scope === "client" && clientId
+              ? `/api/ai/ask/client/${clientId}`
+              : "/api/ai/ask";
+
         const response = askGeminiStream(
           content,
           (chunk) => {
             bufferRef.current.push(chunk);
           },
-          chatId
+          chatId,
+          endpoint
         );
         await response;
       } catch (err: any) {

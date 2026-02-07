@@ -73,7 +73,9 @@ ${prompt}`;
             if (chat instanceof Response) {
                 throw new Error(`Error creating chat: ${chat.statusText}`);
             }
-            router.push(`/chat/${chat.chat_id}?prompt=${encodeURIComponent(contextualPrompt)}`);
+            router.push(
+                `/chat/${chat.chat_id}?scope=case&caseId=${encodeURIComponent(caseData.id)}&prompt=${encodeURIComponent(contextualPrompt)}`
+            );
         } catch {
             toast.error("Error al crear la conversación");
         } finally {
