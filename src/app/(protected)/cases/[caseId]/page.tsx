@@ -1,5 +1,4 @@
 import { getCase, getCaseFiles } from "@/lib/cases-service";
-import { headers } from "next/headers";
 import CasePage from "./CasePage";
 
 type PageProps = {
@@ -9,12 +8,10 @@ type PageProps = {
 };
 
 export default async function Page({ params }: PageProps) {
-  const headersList = await headers();
-  const upstream = new Headers(headersList);
   const { caseId } = await params;
   const [oldCase, files] = await Promise.all([
-    getCase(caseId, upstream),
-    getCaseFiles(caseId, upstream),
+    getCase(caseId),
+    getCaseFiles(caseId),
   ]);
   return <CasePage oldCase={oldCase} files={files} />;
 }

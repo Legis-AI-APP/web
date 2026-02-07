@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SuggestionBar } from "@/components/SuggestionBar";
@@ -11,7 +11,6 @@ import { createChat } from "@/lib/chats-service";
 import { toast } from "sonner";
 import {
     MessageSquare,
-    Paperclip,
     Bot,
     FileText,
     Calendar,
@@ -30,11 +29,10 @@ interface CaseChatAreaProps {
         partyB: string;
         matter: string;
     };
-    isPanelOpen: boolean;
     onOpenPanel?: () => void;
 }
 
-export default function CaseChatArea({ caseData, isPanelOpen, onOpenPanel }: CaseChatAreaProps) {
+export default function CaseChatArea({ caseData, onOpenPanel }: CaseChatAreaProps) {
     const [message, setMessage] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const router = useRouter();
@@ -76,18 +74,19 @@ ${prompt}`;
                 throw new Error(`Error creating chat: ${chat.statusText}`);
             }
             router.push(`/chat/${chat.chat_id}?prompt=${encodeURIComponent(contextualPrompt)}`);
-        } catch (err: any) {
+        } catch {
             toast.error("Error al crear la conversación");
+        } finally {
             setSubmitting(false);
         }
     };
 
-    const fadeIn: any = {
+    const fadeIn: Variants = {
         initial: { opacity: 0 },
         animate: { opacity: 1 }
     };
 
-    const upIn: any = {
+    const upIn: Variants = {
         initial: { opacity: 0, y: 8, filter: "blur(2px)" },
         animate: {
             opacity: 1,

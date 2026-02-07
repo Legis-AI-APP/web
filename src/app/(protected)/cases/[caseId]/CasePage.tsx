@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Case, uploadCaseFile } from "@/lib/cases-service";
+import { Case } from "@/lib/cases-service";
 import { LegisFile } from "@/lib/legis-file";
 import CaseDetailPanel from "@/components/CaseDetailPanel";
 import CaseChatArea from "@/components/CaseChatArea";
@@ -10,11 +10,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function CasePage({
   oldCase,
-  files,
+  files: _files,
 }: {
   oldCase: Case;
   files: LegisFile[];
-}) {
+}) { void _files;
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const router = useRouter();
   const isMobile = useIsMobile();
@@ -71,7 +71,6 @@ export default function CasePage({
         <div className="flex-1">
           <CaseChatArea
             caseData={caseData}
-            isPanelOpen={isPanelOpen}
             onOpenPanel={handleOpenPanel}
           />
         </div>
@@ -93,7 +92,6 @@ export default function CasePage({
         <div className="h-full">
           <CaseChatArea
             caseData={caseData}
-            isPanelOpen={isPanelOpen}
             onOpenPanel={handleOpenPanel}
           />
         </div>
