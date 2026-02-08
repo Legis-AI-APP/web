@@ -1,12 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Case } from "@/lib/cases-service";
 import { LegisFile } from "@/lib/legis-file";
-import CaseDetailPanel from "@/components/CaseDetailPanel";
 import CaseChatArea from "@/components/CaseChatArea";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function CasePage({
   oldCase,
@@ -15,9 +11,6 @@ export default function CasePage({
   oldCase: Case;
   files: LegisFile[];
 }) { void _files;
-  const [isPanelOpen, setIsPanelOpen] = useState(true);
-  const router = useRouter();
-  const isMobile = useIsMobile();
 
   // Datos del caso formateados para el panel
   const caseData = {
@@ -31,71 +24,19 @@ export default function CasePage({
     matter: oldCase.title,
   };
 
-  const handleBackToCases = () => {
-    router.push("/cases");
-  };
-
-  const handleBackToClient = () => {
-    // Esto debería navegar al cliente específico
-    router.push("/clients");
-  };
-
-  const handleClosePanel = () => {
-    if (isMobile) {
-      setIsPanelOpen(false);
-    }
-  };
-
-  const handleOpenPanel = () => {
-    if (isMobile) {
-      setIsPanelOpen(true);
-    }
-  };
+  // Navigation + panel toggles are handled by the contextual Sidebar.
 
   return (
     <div className="min-h-full">
-      {/* En desktop: layout de dos columnas */}
-      <div className="hidden md:flex h-full">
-        {/* Panel de detalles del asunto - siempre visible en desktop */}
-        <div className="flex-shrink-0" style={{ width: '40%' }}>
-          <CaseDetailPanel
-            isOpen={true}
-            onClose={() => { }} // No se puede cerrar en desktop
-            caseData={caseData}
-            onBackToCases={handleBackToCases}
-            onBackToClient={handleBackToClient}
-            fromClient={false}
-          />
-        </div>
+      {/*
+        Sidebar contextual: cuando estás dentro de /cases/[caseId], la barra izquierda ya muestra
+        el panel del caso + la lista de chats del asunto. Evitamos duplicar el panel acá
+        (que dejaba el layout partido en 3).
 
-        {/* Área principal con chat de IA */}
-        <div className="flex-1">
-          <CaseChatArea
-            caseData={caseData}
-            onOpenPanel={handleOpenPanel}
-          />
-        </div>
-      </div>
-
-      {/* En mobile: overlay */}
-      <div className="md:hidden h-full">
-        {/* Panel de detalles del asunto - overlay en mobile */}
-        <CaseDetailPanel
-          isOpen={isPanelOpen}
-          onClose={handleClosePanel}
-          caseData={caseData}
-          onBackToCases={handleBackToCases}
-          onBackToClient={handleBackToClient}
-          fromClient={false}
-        />
-
-        {/* Área principal con chat de IA */}
-        <div className="h-full">
-          <CaseChatArea
-            caseData={caseData}
-            onOpenPanel={handleOpenPanel}
-          />
-        </div>
+        En mobile el acceso al panel/chat list queda vía el Sheet del Sidebar.
+      */}
+      <div className="h-full">
+        <CaseChatArea caseData={caseData} />
       </div>
     </div>
   );
