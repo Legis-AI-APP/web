@@ -4,9 +4,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import type { ChatMessage } from "@/lib/chats-service";
+import type { Chat, ChatMessage } from "@/lib/chats-service";
 import { askGeminiStream } from "@/lib/ask-gemini-stream";
-import { Bot, Menu } from "lucide-react";
+import { Bot, Menu, Plus } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Conversation,
   ConversationContent,
@@ -38,8 +45,11 @@ interface CaseChatAreaProps {
 export default function CaseChatArea({ caseData, onOpenPanel }: CaseChatAreaProps) {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const [caseChats, setCaseChats] = useState<Array<{ id: string; title?: string | null }>>([]);
   const [chatId, setChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const bufferRef = useRef<string[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -58,18 +68,56 @@ export default function CaseChatArea({ caseData, onOpenPanel }: CaseChatAreaProp
     [caseData]
   );
 
-  const ensureCaseChat = useCallback(async (): Promise<string> => {
-    if (chatId) return chatId;
+  const refreshCaseChats = useCallback(async () => {
+    const res = await fetch(`/api/cases/${caseData.id}/chats`, {
+      method: "GET",
+      credentials: "include",
+    });
+    if (!res.ok) return;
 
+    const json = (await res.json()) as Array<{ id: string; title?: string | null }>;
+    setCaseChats(json);
+
+    if (!chatId && json.length > 0) {
+      setChatId(json[0]!.id);
+    }
+  }, [caseData.id, chatId]);
+
+  const loadChatHistory = useCallback(async (id: string) => {
+    setLoadingHistory(true);
+    try {
+      const res = await fetch(`/api/chats/${id}`, {
+        method: "GET",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("No se pudo cargar el historial del chat");
+      const json = (await res.json()) as Chat;
+      setMessages(json.messages ?? []);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, []);
+
+  const createNewCaseChat = useCallback(async (): Promise<string> => {
     const res = await fetch(`/api/cases/${caseData.id}/chats`, {
       method: "POST",
       credentials: "include",
     });
     if (!res.ok) throw new Error("No se pudo crear el chat del caso");
     const data = (await res.json()) as { chat_id: string };
+
+    // refrescamos lista y seleccionamos el nuevo chat
+    await refreshCaseChats();
     setChatId(data.chat_id);
+    setMessages([]);
+
     return data.chat_id;
-  }, [caseData.id, chatId]);
+  }, [caseData.id, refreshCaseChats]);
+
+  const ensureCaseChat = useCallback(async (): Promise<string> => {
+    if (chatId) return chatId;
+    return createNewCaseChat();
+  }, [chatId, createNewCaseChat]);
 
   const handleSend = useCallback(
     async (prompt: string) => {
@@ -132,6 +180,14 @@ export default function CaseChatArea({ caseData, onOpenPanel }: CaseChatAreaProp
     };
   }, []);
 
+  useEffect(() => {
+    void refreshCaseChats();
+  }, [refreshCaseChats]);
+
+  useEffect(() => {
+    if (chatId) void loadChatHistory(chatId);
+  }, [chatId, loadChatHistory]);
+
   const fadeIn: Variants = {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
@@ -147,27 +203,66 @@ export default function CaseChatArea({ caseData, onOpenPanel }: CaseChatAreaProp
         variants={fadeIn}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="p-2 rounded-lg bg-primary/10">
               <Bot className="h-5 w-5 text-primary" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h1 className="text-lg font-semibold text-foreground">IA Legal — Asunto</h1>
-              <p className="text-sm text-muted-foreground">{caseData.partyA} c/ {caseData.partyB} — {caseData.matter}</p>
+              <p className="text-sm text-muted-foreground truncate">
+                {caseData.partyA || caseData.partyB
+                  ? `${caseData.partyA} c/ ${caseData.partyB} — ${caseData.matter}`
+                  : caseData.title}
+              </p>
             </div>
           </div>
 
-          {isMobile && onOpenPanel && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onOpenPanel}
-              className="h-10 w-10"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
+              <Select
+                value={chatId ?? undefined}
+                onValueChange={(v) => setChatId(v)}
+                disabled={submitting || loadingHistory}
+              >
+                <SelectTrigger className="w-[240px]">
+                  <SelectValue placeholder="Elegí un chat" />
+                </SelectTrigger>
+                <SelectContent>
+                  {caseChats.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.title && c.title.trim().length > 0 ? c.title : `Chat ${c.id.slice(0, 6)}`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void createNewCaseChat().catch((e) =>
+                    toast.error(e instanceof Error ? e.message : "No se pudo crear el chat")
+                  );
+                }}
+                disabled={submitting}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Nuevo
+              </Button>
+            </div>
+
+            {isMobile && onOpenPanel && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onOpenPanel}
+                className="h-10 w-10"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            )}
+          </div>
         </div>
       </motion.div>
 
