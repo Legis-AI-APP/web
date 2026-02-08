@@ -7,9 +7,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
+import AddCaseEventDialog from "@/components/dialog/AddCaseEventDialog";
 import {
     ArrowLeft,
-    Plus,
     Calendar,
     Eye,
     Download,
@@ -106,6 +106,10 @@ export default function CaseDetailPanel({
     const resizeRef = useRef<HTMLDivElement>(null);
 
     const [events, setEvents] = useState<CaseEventDto[]>([]);
+
+    const handleEventCreated = (created: CaseEventDto) => {
+        setEvents((prev) => [created, ...prev]);
+    };
     const [files, setFiles] = useState<LegisFile[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -200,10 +204,12 @@ export default function CaseDetailPanel({
             <TabsContent value="movements" className="space-y-3 mt-4">
                 <div className="flex justify-between items-center">
                     <h3 className="font-medium">Movimientos del caso</h3>
-                    <Button size="sm" variant="outline">
-                        <Plus className="h-4 w-4 mr-1" />
-                        Agregar
-                    </Button>
+                    <AddCaseEventDialog
+                        caseId={caseData.id}
+                        type="MOVEMENT"
+                        triggerText="Agregar"
+                        onCreated={handleEventCreated}
+                    />
                 </div>
                 <div className="space-y-2">
                     {eventsByTab.movements.length === 0 ? (
@@ -239,10 +245,12 @@ export default function CaseDetailPanel({
             <TabsContent value="documents" className="space-y-3 mt-4">
                 <div className="flex justify-between items-center">
                     <h3 className="font-medium">Documentos del caso</h3>
-                    <Button size="sm" variant="outline">
-                        <Plus className="h-4 w-4 mr-1" />
-                        Agregar
-                    </Button>
+                    <AddCaseEventDialog
+                        caseId={caseData.id}
+                        type="DOCUMENT"
+                        triggerText="Agregar"
+                        onCreated={handleEventCreated}
+                    />
                 </div>
                 <div className="space-y-2">
                     {fileCards.length === 0 ? (
@@ -293,10 +301,12 @@ export default function CaseDetailPanel({
             <TabsContent value="dates" className="space-y-3 mt-4">
                 <div className="flex justify-between items-center">
                     <h3 className="font-medium">Audiencias y vencimientos</h3>
-                    <Button size="sm" variant="outline">
-                        <Plus className="h-4 w-4 mr-1" />
-                        Agregar
-                    </Button>
+                    <AddCaseEventDialog
+                        caseId={caseData.id}
+                        type="DATE"
+                        triggerText="Agregar"
+                        onCreated={handleEventCreated}
+                    />
                 </div>
                 <div className="space-y-2">
                     {eventsByTab.dates.length === 0 ? (
@@ -337,10 +347,12 @@ export default function CaseDetailPanel({
             <TabsContent value="notes" className="space-y-3 mt-4">
                 <div className="flex justify-between items-center">
                     <h3 className="font-medium">Notas del caso</h3>
-                    <Button size="sm" variant="outline">
-                        <Plus className="h-4 w-4 mr-1" />
-                        Agregar
-                    </Button>
+                    <AddCaseEventDialog
+                        caseId={caseData.id}
+                        type="NOTE"
+                        triggerText="Agregar"
+                        onCreated={handleEventCreated}
+                    />
                 </div>
                 <div className="space-y-2">
                     {eventsByTab.notes.length === 0 ? (
