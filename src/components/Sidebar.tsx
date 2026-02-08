@@ -22,6 +22,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import LegisLogo from "@/components/LegisLogo";
 import CaseSidebar from "@/components/CaseSidebar";
+import ClientSidebar from "@/components/ClientSidebar";
 
 type SidebarProps = {
   chats: Omit<Chat, "messages">[];
@@ -29,6 +30,11 @@ type SidebarProps = {
 
 function getCaseIdFromPath(pathname: string) {
   const m = pathname.match(/^\/cases\/([^/?#]+)/);
+  return m?.[1] ?? null;
+}
+
+function getClientIdFromPath(pathname: string) {
+  const m = pathname.match(/^\/clients\/([^/?#]+)/);
   return m?.[1] ?? null;
 }
 
@@ -67,7 +73,9 @@ export default function Sidebar({ chats }: SidebarProps) {
   };
 
   const caseId = getCaseIdFromPath(pathname);
+  const clientId = getClientIdFromPath(pathname);
   const isCaseContext = Boolean(caseId);
+  const isClientContext = Boolean(clientId);
 
   // ---- UI chunk reutilizable (lovable-style) ----
   const NavContent = (
@@ -75,6 +83,10 @@ export default function Sidebar({ chats }: SidebarProps) {
       {isCaseContext ? (
         <div className="flex-1 overflow-hidden">
           <CaseSidebar caseId={caseId!} />
+        </div>
+      ) : isClientContext ? (
+        <div className="flex-1 overflow-hidden">
+          <ClientSidebar clientId={clientId!} />
         </div>
       ) : (
         <>
