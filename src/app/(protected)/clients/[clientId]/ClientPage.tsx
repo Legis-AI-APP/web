@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader, User, Phone, Mail, MapPin, FolderOpen, FileText, Calendar, Edit, Download, Plus, Users, MessageSquare } from 'lucide-react';
+import { Loader, User, Phone, Mail, MapPin, FolderOpen, FileText, Calendar, Edit, Download, Users, MessageSquare } from 'lucide-react';
 import { AddDialog } from "@/components/dialog/AddDialog";
 import AddCaseDialog from "@/components/dialog/AddCaseDialog";
 import { Client, uploadClientFile } from "@/lib/clients-service";
@@ -14,6 +15,8 @@ import { useRouter } from "next/navigation";
 import { LegisFile } from "@/lib/legis-file";
 import { motion, Variants } from "framer-motion";
 import ClientChatArea from "@/components/ClientChatArea";
+import ClientPersonDialog from "@/components/dialog/ClientPersonDialog";
+import type { ClientPersonDto } from "@/lib/client-persons";
 
 export default function ClientPage({
   client,
@@ -36,69 +39,63 @@ export default function ClientPage({
     }
   };
 
-  // Mock data for cases (to be replaced with real data later)
-  const cases = [
-    {
-      id: '1',
-      name: 'Asunto Legal Principal',
-      status: 'En Progreso',
-      startDate: '2024-01-10',
-      nextHearing: '2024-02-15',
-      description: 'Proceso legal en curso para el cliente'
-    },
-    {
-      id: '2',
-      name: 'Documentación Adicional',
-      status: 'Pendiente',
-      startDate: '2024-01-12',
-      nextHearing: '2024-02-20',
-      description: 'Revisión y análisis de documentación'
-    }
-  ];
+  // Persons (real)
+  const [persons, setPersons] = useState<ClientPersonDto[]>([]);
+  const [personsLoading, setPersonsLoading] = useState(false);
 
-  // Mock data for persons (to be replaced with real data later)
-  const persons = [
-    {
-      id: '1',
-      name: 'María González',
-      role: 'Testigo',
-      relationship: 'Vecina',
-      phone: '+54 11 1234-5678',
-      email: 'maria.gonzalez@email.com'
+  const refreshPersons = useMemo(
+    () => async () => {
+      setPersonsLoading(true);
+      try {
+        const res = await fetch(`/api/clients/${client.id}/persons`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const json = (await res.json()) as ClientPersonDto[];
+        setPersons(json);
+      } finally {
+        setPersonsLoading(false);
+      }
     },
-    {
-      id: '2',
-      name: 'Carlos Rodríguez',
-      role: 'Perito',
-      relationship: 'Profesional',
-      phone: '+54 11 9876-5432',
-      email: 'carlos.rodriguez@perito.com'
-    },
-    {
-      id: '3',
-      name: 'Ana Martínez',
-      role: 'Testigo',
-      relationship: 'Compañera de trabajo',
-      phone: '+54 11 5555-1234',
-      email: 'ana.martinez@trabajo.com'
-    }
-  ];
+    [client.id]
+  );
 
-  // Mock data for timeline (to be replaced with real data later)
-  const timeline = [
-    {
-      id: '1',
-      title: 'Cliente registrado en el sistema',
-      date: '2024-01-01',
-      type: 'registration'
-    },
-    {
-      id: '2',
-      title: 'Primer archivo subido',
-      date: '2024-01-10',
-      type: 'file'
-    }
-  ];
+  useEffect(() => {
+    void refreshPersons();
+  }, [refreshPersons]);
+
+  const upsertPerson = (p: ClientPersonDto) => {
+    setPersons((prev) => {
+      const idx = prev.findIndex((x) => x.id === p.id);
+      if (idx === -1) return [p, ...prev];
+      const next = [...prev];
+      next[idx] = p;
+      return next;
+    });
+  };
+
+  const deletePerson = async (personId: string) => {
+    const res = await fetch(`/api/clients/${client.id}/persons/${personId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error(await res.text());
+    setPersons((prev) => prev.filter((p) => p.id !== personId));
+  };
+
+  // TODO: connect cases + timeline (remove mocks) in follow-up feature PRs.
+  type ClientCaseMock = {
+    id: string;
+    name: string;
+    status: string;
+    startDate: string;
+    nextHearing?: string;
+    description: string;
+  };
+  const cases: ClientCaseMock[] = [];
+
+  type TimelineMock = { id: string; title: string; date: string; type: string };
+  const timeline: TimelineMock[] = [];
 
   // Animation variants
   const fadeInUp: Variants = {
@@ -221,16 +218,25 @@ export default function ClientPage({
                   </div>
                   <CardTitle className="text-lg text-foreground">Personas</CardTitle>
                 </div>
-                <Button variant="outline" size="sm" className="border-primary text-primary hover:bg-primary hover:text-white">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Agregar
-                </Button>
+                <ClientPersonDialog
+                  clientId={client.id}
+                  mode="create"
+                  triggerText="Agregar"
+                  onSaved={(p) => {
+                    upsertPerson(p);
+                  }}
+                />
               </CardHeader>
               <CardContent className="space-y-3">
-                {persons.length > 0 ? (
+                {personsLoading ? (
+                  <div className="text-center py-6">
+                    <Loader className="h-8 w-8 text-muted-foreground mx-auto mb-2 animate-spin" />
+                    <p className="text-sm text-muted-foreground">Cargando personas...</p>
+                  </div>
+                ) : persons.length > 0 ? (
                   persons.map((person) => (
                     <div key={person.id} className="p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
-                      <div className="flex items-start justify-between">
+                      <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
                           <h4 className="font-medium text-foreground text-sm">{person.name}</h4>
                           <div className="flex items-center space-x-2 mt-1">
@@ -252,9 +258,25 @@ export default function ClientPage({
                             </div>
                           )}
                         </div>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Edit className="h-3 w-3" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <ClientPersonDialog
+                            clientId={client.id}
+                            mode="edit"
+                            initial={person}
+                            triggerText="Editar"
+                            onSaved={(p) => upsertPerson(p)}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-9 px-2"
+                            onClick={() => {
+                              void deletePerson(person.id).catch((e) => toast.error(String(e)));
+                            }}
+                          >
+                            Borrar
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))
@@ -262,7 +284,7 @@ export default function ClientPage({
                   <div className="text-center py-6">
                     <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                     <p className="text-sm text-muted-foreground">No hay personas asociadas</p>
-                    <p className="text-xs text-muted-foreground mt-1">Agrega personas relacionadas al caso</p>
+                    <p className="text-xs text-muted-foreground mt-1">Agrega personas relacionadas al cliente</p>
                   </div>
                 )}
               </CardContent>
