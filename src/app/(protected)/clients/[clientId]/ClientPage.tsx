@@ -330,34 +330,36 @@ export default function ClientPage({
           transition={{ delay: 0.2 }}
         >
           <Tabs defaultValue="cases" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 bg-sidebar rounded-lg">
+            <TabsList className="w-full bg-sidebar rounded-lg overflow-x-auto whitespace-nowrap">
+              <div className="w-max min-w-full inline-flex gap-1 p-1">
               <TabsTrigger
                 value="cases"
-                className="rounded-lg data-[state=active]:bg-[var(--legis-blue-dark)] data-[state=active]:text-white data-[state=active]:shadow-sm"
+                className="shrink-0 px-3 rounded-lg data-[state=active]:bg-[var(--legis-blue-dark)] data-[state=active]:text-white data-[state=active]:shadow-sm"
               >
                 Asuntos
               </TabsTrigger>
               <TabsTrigger
                 value="documents"
-                className="rounded-lg data-[state=active]:bg-[var(--legis-blue-dark)] data-[state=active]:text-white data-[state=active]:shadow-sm"
+                className="shrink-0 px-3 rounded-lg data-[state=active]:bg-[var(--legis-blue-dark)] data-[state=active]:text-white data-[state=active]:shadow-sm"
               >
                 Documentos
               </TabsTrigger>
               <TabsTrigger
                 value="timeline"
-                className="rounded-lg data-[state=active]:bg-[var(--legis-blue-dark)] data-[state=active]:text-white data-[state=active]:shadow-sm"
+                className="shrink-0 px-3 rounded-lg data-[state=active]:bg-[var(--legis-blue-dark)] data-[state=active]:text-white data-[state=active]:shadow-sm"
               >
                 Cronología
               </TabsTrigger>
               <TabsTrigger
                 value="chat"
-                className="rounded-lg data-[state=active]:bg-[var(--legis-blue-dark)] data-[state=active]:text-white data-[state=active]:shadow-sm"
+                className="shrink-0 px-3 rounded-lg data-[state=active]:bg-[var(--legis-blue-dark)] data-[state=active]:text-white data-[state=active]:shadow-sm"
               >
                 <span className="inline-flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" />
                   Chat
                 </span>
               </TabsTrigger>
+              </div>
             </TabsList>
 
             <TabsContent value="cases" className="space-y-6">
