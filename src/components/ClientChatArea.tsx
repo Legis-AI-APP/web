@@ -4,9 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Bot, Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import type { ChatMessage } from "@/lib/chats-service";
+import type { Chat, ChatMessage } from "@/lib/chats-service";
 import { askGeminiStream } from "@/lib/ask-gemini-stream";
 import {
   Conversation,
@@ -39,11 +40,15 @@ export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaPr
   const [submitting, setSubmitting] = useState(false);
   const [chatId, setChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
+  void loadingHistory;
   const bufferRef = useRef<string[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const isMobile = useIsMobile();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const suggestions = useMemo(
     () => [
@@ -55,9 +60,22 @@ export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaPr
     [client.first_name, client.last_name]
   );
 
-  const ensureClientChat = useCallback(async (): Promise<string> => {
-    if (chatId) return chatId;
+  const loadChatHistory = useCallback(async (id: string) => {
+    setLoadingHistory(true);
+    try {
+      const res = await fetch(`/api/chats/${id}`, {
+        method: "GET",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("No se pudo cargar el historial del chat");
+      const json = (await res.json()) as Chat;
+      setMessages(json.messages ?? []);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, []);
 
+  const createNewClientChat = useCallback(async (): Promise<string> => {
     const res = await fetch(`/api/clients/${client.id}/chats`, {
       method: "POST",
       credentials: "include",
@@ -65,9 +83,19 @@ export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaPr
 
     if (!res.ok) throw new Error("No se pudo crear el chat del cliente");
     const data = (await res.json()) as { chat_id: string };
+
+    // deep link
+    router.replace(`/clients/${client.id}?chatId=${data.chat_id}`);
     setChatId(data.chat_id);
+    setMessages([]);
+
     return data.chat_id;
-  }, [chatId, client.id]);
+  }, [client.id, router]);
+
+  const ensureClientChat = useCallback(async (): Promise<string> => {
+    if (chatId) return chatId;
+    return createNewClientChat();
+  }, [chatId, createNewClientChat]);
 
   const handleSend = useCallback(
     async (prompt: string) => {
@@ -125,6 +153,17 @@ export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaPr
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    const fromUrl = searchParams.get("chatId");
+    if (fromUrl && fromUrl !== chatId) {
+      setChatId(fromUrl);
+    }
+  }, [searchParams, chatId]);
+
+  useEffect(() => {
+    if (chatId) void loadChatHistory(chatId);
+  }, [chatId, loadChatHistory]);
 
   const fadeIn: Variants = { initial: { opacity: 0 }, animate: { opacity: 1 } };
 
