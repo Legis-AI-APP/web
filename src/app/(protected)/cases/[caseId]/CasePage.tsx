@@ -23,11 +23,12 @@ export default function CasePage({
   const caseData = {
     id: oldCase.id,
     title: oldCase.title,
-    clientName: "Cliente del Asunto", // Esto debería venir de la relación con el cliente
-    status: "En Progreso", // Esto debería venir del estado real del caso
-    partyA: "Demandante", // Esto debería venir de los datos del caso
-    partyB: "Demandado", // Esto debería venir de los datos del caso
-    matter: oldCase.title, // O una materia específica del caso
+    clientName: oldCase.client_id ? `Cliente (${oldCase.client_id})` : "Cliente",
+    status: oldCase.status,
+    // Mientras no exista el modelo/endpoint para carátula/partes/materia, caemos a título.
+    partyA: "",
+    partyB: "",
+    matter: oldCase.title,
   };
 
   const handleBackToCases = () => {

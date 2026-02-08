@@ -391,7 +391,9 @@ export default function CaseDetailPanel({
 
                     <div className="space-y-2">
                         <h1 className="text-lg font-semibold text-foreground">
-                            {caseData.partyA} c/ {caseData.partyB} s/ {caseData.matter}
+                            {caseData.partyA || caseData.partyB
+                                ? `${caseData.partyA} c/ ${caseData.partyB} s/ ${caseData.matter}`
+                                : caseData.title}
                         </h1>
                         <p className="text-sm text-muted-foreground">
                             {caseData.clientName}
@@ -483,7 +485,9 @@ export default function CaseDetailPanel({
 
                         <div className="space-y-2">
                             <h1 className="text-lg font-semibold text-foreground">
-                                {caseData.partyA} c/ {caseData.partyB} s/ {caseData.matter}
+                                {caseData.partyA || caseData.partyB
+                                    ? `${caseData.partyA} c/ ${caseData.partyB} s/ ${caseData.matter}`
+                                    : caseData.title}
                             </h1>
                             <p className="text-sm text-muted-foreground">
                                 {caseData.clientName}
