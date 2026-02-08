@@ -83,7 +83,7 @@ export default function ClientPage({
     setPersons((prev) => prev.filter((p) => p.id !== personId));
   };
 
-  // TODO: connect cases + timeline (remove mocks) in follow-up feature PRs.
+  // TODO: connect cases (remove mocks) in follow-up feature PRs.
   type ClientCaseMock = {
     id: string;
     name: string;
@@ -94,8 +94,37 @@ export default function ClientPage({
   };
   const cases: ClientCaseMock[] = [];
 
-  type TimelineMock = { id: string; title: string; date: string; type: string };
-  const timeline: TimelineMock[] = [];
+  type TimelineItem = {
+    id: string;
+    title: string;
+    date: string;
+    type: "file" | "person";
+  };
+
+  const timeline: TimelineItem[] = useMemo(() => {
+    const items: TimelineItem[] = [];
+
+    for (const f of files) {
+      items.push({
+        id: `file:${f.name}:${f.url}`,
+        title: `Documento subido: ${f.name}`,
+        date: new Date().toISOString(),
+        type: "file",
+      });
+    }
+
+    for (const p of persons) {
+      items.push({
+        id: `person:${p.id}`,
+        title: `Persona: ${p.name} (${p.role})`,
+        date: p.updatedAt || p.createdAt,
+        type: "person",
+      });
+    }
+
+    items.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+    return items;
+  }, [files, persons]);
 
   // Animation variants
   const fadeInUp: Variants = {
