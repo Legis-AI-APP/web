@@ -108,7 +108,7 @@ export default function ClientPage({
       items.push({
         id: `file:${f.name}:${f.url}`,
         title: `Documento subido: ${f.name}`,
-        date: new Date().toISOString(),
+        date: f.createdAt || f.updatedAt || new Date().toISOString(),
         type: "file",
       });
     }
@@ -479,7 +479,7 @@ export default function ClientPage({
                             </div>
                             <div className="text-right">
                               <p className="text-sm text-muted-foreground">
-                                {new Date().toLocaleDateString('es-AR')}
+                                {new Date(doc.createdAt || doc.updatedAt || Date.now()).toLocaleDateString('es-AR')}
                               </p>
                               <Button
                                 variant="ghost"
