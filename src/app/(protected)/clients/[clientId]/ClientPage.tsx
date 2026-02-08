@@ -344,48 +344,64 @@ export default function ClientPage({
                     preSelectedClient={client}
                   />
                 </div>
-                {cases.map((case_) => (
-                  <motion.div key={case_.id} variants={itemVariants}>
-                    <Card
-                      className="border-0 cursor-pointer"
-                      style={{
-                      }}
-                      onClick={() => router.push(`/cases/${case_.id}`)}
-                    >
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-lg text-foreground">{case_.name}</CardTitle>
-                            <CardDescription className="text-muted-foreground">{case_.description}</CardDescription>
-                          </div>
-                          <Badge
-                            variant={case_.status === 'En Progreso' ? 'default' : 'secondary'}
-                            className={
-                              case_.status === 'En Progreso' ? 'bg-blue-100 text-blue-800' :
-                                'bg-yellow-100 text-yellow-800'
-                            }
-                          >
-                            {case_.status}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center justify-between text-sm text-muted-foreground">
-                          <div className="flex items-center space-x-4">
-                            <span>Inicio: {new Date(case_.startDate).toLocaleDateString('es-AR')}</span>
-                            {case_.nextHearing && (
-                              <div className="flex items-center space-x-1">
-                                <Calendar className="h-4 w-4" />
-                                <span>Próxima audiencia: {new Date(case_.nextHearing).toLocaleDateString('es-AR')}</span>
-                              </div>
-                            )}
-                          </div>
-                          <FolderOpen className="h-4 w-4" />
-                        </div>
+                {cases.length === 0 ? (
+                  <motion.div variants={itemVariants}>
+                    <Card className="border-0" style={{ boxShadow: "none" }}>
+                      <CardContent className="p-8 text-center">
+                        <FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-muted-foreground mb-2">Sin asuntos todavía</h3>
+                        <p className="text-muted-foreground">
+                          Por ahora este panel no está conectado al endpoint de asuntos del cliente.
+                        </p>
                       </CardContent>
                     </Card>
                   </motion.div>
-                ))}
+                ) : (
+                  cases.map((case_) => (
+                    <motion.div key={case_.id} variants={itemVariants}>
+                      <Card
+                        className="border-0 cursor-pointer"
+                        style={{}}
+                        onClick={() => router.push(`/cases/${case_.id}`)}
+                      >
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <CardTitle className="text-lg text-foreground">{case_.name}</CardTitle>
+                              <CardDescription className="text-muted-foreground">{case_.description}</CardDescription>
+                            </div>
+                            <Badge
+                              variant={case_.status === 'En Progreso' ? 'default' : 'secondary'}
+                              className={
+                                case_.status === 'En Progreso'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }
+                            >
+                              {case_.status}
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center justify-between text-sm text-muted-foreground">
+                            <div className="flex items-center space-x-4">
+                              <span>Inicio: {new Date(case_.startDate).toLocaleDateString('es-AR')}</span>
+                              {case_.nextHearing && (
+                                <div className="flex items-center space-x-1">
+                                  <Calendar className="h-4 w-4" />
+                                  <span>
+                                    Próxima audiencia: {new Date(case_.nextHearing).toLocaleDateString('es-AR')}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <FolderOpen className="h-4 w-4" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))
+                )}
               </motion.div>
             </TabsContent>
 
@@ -478,19 +494,28 @@ export default function ClientPage({
                     <CardTitle className="text-foreground">Cronología de Actividades</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {timeline.map((item) => (
-                        <div key={item.id} className="flex items-start space-x-3">
-                          <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
-                          <div>
-                            <p className="font-medium text-foreground">{item.title}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {new Date(item.date).toLocaleDateString('es-AR')}
-                            </p>
+                    {timeline.length === 0 ? (
+                      <div className="p-6 text-center">
+                        <p className="text-sm text-muted-foreground">Sin actividad todavía.</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          (Pendiente conectar eventos/archivos/asuntos para armar la cronología real.)
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {timeline.map((item) => (
+                          <div key={item.id} className="flex items-start space-x-3">
+                            <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                            <div>
+                              <p className="font-medium text-foreground">{item.title}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {new Date(item.date).toLocaleDateString('es-AR')}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
