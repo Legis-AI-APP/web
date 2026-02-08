@@ -21,6 +21,7 @@ import type { LegisFile } from "@/lib/legis-file";
 interface CaseDetailPanelProps {
     isOpen: boolean;
     onClose: () => void;
+    mode?: "page" | "sidebar";
     caseData: {
         id: string;
         title: string;
@@ -96,6 +97,7 @@ const getStatusColor = (status: string) => {
 export default function CaseDetailPanel({
     isOpen,
     onClose,
+    mode = "page",
     caseData,
     onBackToCases,
     onBackToClient,
@@ -389,17 +391,19 @@ export default function CaseDetailPanel({
             <div className="bg-background border-r shadow-sm flex flex-col h-full relative">
                 {/* Header */}
                 <div className="p-4 border-b bg-sidebar/50">
-                    <div className="flex items-center justify-between mb-4">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={fromClient ? onBackToClient : onBackToCases}
-                            className="text-muted-foreground hover:text-foreground"
-                        >
-                            <ArrowLeft className="h-4 w-4 mr-2" />
-                            {fromClient ? 'Volver a Cliente' : 'Volver a Asuntos'}
-                        </Button>
-                    </div>
+                    {mode === "page" && (
+                        <div className="flex items-center justify-between mb-4">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={fromClient ? onBackToClient : onBackToCases}
+                                className="text-muted-foreground hover:text-foreground"
+                            >
+                                <ArrowLeft className="h-4 w-4 mr-2" />
+                                {fromClient ? 'Volver a Cliente' : 'Volver a Asuntos'}
+                            </Button>
+                        </div>
+                    )}
 
                     <div className="space-y-2">
                         <h1 className="text-lg font-semibold text-foreground">
@@ -445,12 +449,16 @@ export default function CaseDetailPanel({
                     </Tabs>
                 </div>
 
-                {/* Resize Handle */}
-                <div
-                    ref={resizeRef}
-                    onMouseDown={handleResizeStart}
-                    className="absolute right-0 top-0 bottom-0 w-1 bg-border hover:bg-primary/50 cursor-col-resize transition-colors"
-                />
+                {mode === "page" && (
+                    <>
+                        {/* Resize Handle */}
+                        <div
+                            ref={resizeRef}
+                            onMouseDown={handleResizeStart}
+                            className="absolute right-0 top-0 bottom-0 w-1 bg-border hover:bg-primary/50 cursor-col-resize transition-colors"
+                        />
+                    </>
+                )}
             </div>
         );
     }
