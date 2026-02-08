@@ -21,10 +21,16 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import LegisLogo from "@/components/LegisLogo";
+import CaseSidebar from "@/components/CaseSidebar";
 
 type SidebarProps = {
   chats: Omit<Chat, "messages">[];
 };
+
+function getCaseIdFromPath(pathname: string) {
+  const m = pathname.match(/^\/cases\/([^/?#]+)/);
+  return m?.[1] ?? null;
+}
 
 export default function Sidebar({ chats }: SidebarProps) {
   const router = useRouter();
@@ -60,79 +66,90 @@ export default function Sidebar({ chats }: SidebarProps) {
     }
   };
 
+  const caseId = getCaseIdFromPath(pathname);
+  const isCaseContext = Boolean(caseId);
+
   // ---- UI chunk reutilizable (lovable-style) ----
   const NavContent = (
     <div className="p-2 h-full flex flex-col">
-      {/* Main Navigation */}
-      <div>
-        <div className="space-y-1">
-          {items.map(({ label, icon: Icon, path }) => {
-            const active = isActive(path);
-            return (
-              <button
-                key={path}
-                onClick={() => {
-                  router.push(path);
-                  if (isMobile) setOpen(false);
-                }}
-                className={cn(
-                  "w-full flex items-center gap-2 p-2 pt-1.5 pb-1.5 rounded-md text-sm transition-all duration-200",
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-accent/50",
-                  expanded ? null : "justify-center",
-                  isMobile ? "justify-start" : null,
-                )}
-              >
-                <Icon className="h-4 w-4 min-w-4" />
-                {(!isMobile && expanded) || isMobile ? (
-                  <span>{label}</span>
-                ) : null}
-              </button>
-            );
-          })}
+      {isCaseContext ? (
+        <div className="flex-1 overflow-hidden">
+          <CaseSidebar caseId={caseId!} />
         </div>
-      </div>
-
-      {/* Quick Actions (opcional) */}
-      {((!isMobile && expanded) || isMobile) && (
-        <div className="mt-2 space-y-2" />
-      )}
-
-      {/* Chats recientes */}
-      {((!isMobile && expanded) || isMobile) && (
-        <div className="mt-5 pt-2 border-t flex-1 flex flex-col overflow-hidden">
-          <p className="mt-1 mb-2 text-xs text-muted-foreground px-1.5">
-            Chats recientes
-          </p>
-
-          <div className="flex-1 overflow-y-auto flex flex-col gap-1">
-            {chats
-              .toReversed()
-              .slice(0, 30)
-              .map((chat) => {
-                const active = pathname === `/chat/${chat.id}`;
+      ) : (
+        <>
+          {/* Main Navigation */}
+          <div>
+            <div className="space-y-1">
+              {items.map(({ label, icon: Icon, path }) => {
+                const active = isActive(path);
                 return (
                   <button
-                    key={chat.id}
+                    key={path}
                     onClick={() => {
-                      router.push(`/chat/${chat.id}`);
+                      router.push(path);
                       if (isMobile) setOpen(false);
                     }}
                     className={cn(
-                      "w-full flex items-center gap-2 pt-2 pb-2 rounded-md text-sm transition-all duration-200 truncate px-2",
+                      "w-full flex items-center gap-2 p-2 pt-1.5 pb-1.5 rounded-md text-sm transition-all duration-200",
                       active
                         ? "bg-primary text-primary-foreground"
                         : "hover:bg-accent/50",
+                      expanded ? null : "justify-center",
+                      isMobile ? "justify-start" : null,
                     )}
-                    title={chat.title}
                   >
-                    <span className="truncate text-[13px]">{chat.title}</span>
+                    <Icon className="h-4 w-4 min-w-4" />
+                    {(!isMobile && expanded) || isMobile ? (
+                      <span>{label}</span>
+                    ) : null}
                   </button>
                 );
               })}
+            </div>
           </div>
-        </div>
+
+          {/* Quick Actions (opcional) */}
+          {((!isMobile && expanded) || isMobile) && (
+            <div className="mt-2 space-y-2" />
+          )}
+
+          {/* Chats recientes */}
+          {((!isMobile && expanded) || isMobile) && (
+            <div className="mt-5 pt-2 border-t flex-1 flex flex-col overflow-hidden">
+              <p className="mt-1 mb-2 text-xs text-muted-foreground px-1.5">
+                Chats recientes
+              </p>
+
+              <div className="flex-1 overflow-y-auto flex flex-col gap-1">
+                {chats
+                  .toReversed()
+                  .slice(0, 30)
+                  .map((chat) => {
+                    const active = pathname === `/chat/${chat.id}`;
+                    return (
+                      <button
+                        key={chat.id}
+                        onClick={() => {
+                          router.push(`/chat/${chat.id}`);
+                          if (isMobile) setOpen(false);
+                        }}
+                        className={cn(
+                          "w-full flex items-center gap-2 pt-2 pb-2 rounded-md text-sm transition-all duration-200 truncate px-2",
+                          active
+                            ? "bg-primary text-primary-foreground"
+                            : "hover:bg-accent/50",
+                        )}
+                        title={chat.title}
+                      >
+                        <span className="truncate text-[13px]">{chat.title}</span>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Footer - Logout Button */}

@@ -78,8 +78,13 @@ export default function CaseChatArea({ caseData, onOpenPanel }: CaseChatAreaProp
     const json = (await res.json()) as Array<{ id: string; title?: string | null }>;
     setCaseChats(json);
 
-    if (!chatId && json.length > 0) {
-      setChatId(json[0]!.id);
+    // allow deep-linking via ?chatId=
+    const url = new URL(window.location.href);
+    const fromUrl = url.searchParams.get("chatId");
+
+    if (!chatId) {
+      if (fromUrl) setChatId(fromUrl);
+      else if (json.length > 0) setChatId(json[0]!.id);
     }
   }, [caseData.id, chatId]);
 
