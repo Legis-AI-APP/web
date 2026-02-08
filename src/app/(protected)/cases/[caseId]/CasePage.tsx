@@ -53,7 +53,7 @@ export default function CasePage({
   };
 
   return (
-    <div className="h-screen overflow-hidden">
+    <div className="min-h-full">
       {/* En desktop: layout de dos columnas */}
       <div className="hidden md:flex h-full">
         {/* Panel de detalles del asunto - siempre visible en desktop */}
