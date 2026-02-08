@@ -93,8 +93,30 @@ export default function ClientSidebar({ clientId }: { clientId: string }) {
         {client?.email && <p className="text-xs text-muted-foreground truncate">{client.email}</p>}
       </div>
 
-      <div className="flex-1 overflow-hidden p-3">
-        <p className="text-xs text-muted-foreground">(panel del cliente acá)</p>
+      <div className="flex-1 overflow-y-auto p-3 space-y-3">
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">Documento</p>
+          <p className="text-sm text-foreground">
+            {client ? `${client.document_type}: ${client.document}` : loading ? "Cargando..." : "-"}
+          </p>
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">Teléfono</p>
+          <p className="text-sm text-foreground">{client?.phone || "-"}</p>
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">Dirección</p>
+          <p className="text-sm text-foreground">{client?.address || "-"}</p>
+        </div>
+
+        <div className="rounded-lg border bg-card p-2">
+          <p className="text-xs text-muted-foreground">
+            Próximo: podemos meter acá (1) últimos documentos subidos, (2) asuntos del cliente,
+            (3) timeline, cuando conectemos endpoints.
+          </p>
+        </div>
       </div>
 
       <div className="border-t p-3 space-y-2">
