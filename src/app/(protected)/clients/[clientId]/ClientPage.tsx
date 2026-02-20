@@ -10,6 +10,7 @@ import type { Case } from "@/lib/cases-service";
 
 import ScopedChatWorkspace from "@/components/ScopedChatWorkspace";
 import ClientManagementPanel from "@/components/ClientManagementPanel";
+import EntitySubnav from "@/components/EntitySubnav";
 
 export default function ClientPage({
   client,
@@ -80,11 +81,26 @@ export default function ClientPage({
   }, [refreshCases]);
 
   const rightPanel = (
-    <div className="h-full">
-      <ClientManagementPanel client={client} persons={persons} files={files} cases={cases} />
-      {(personsLoading || casesLoading) && (
-        <div className="px-4 pb-4 text-xs text-muted-foreground">Actualizando…</div>
-      )}
+    <div className="h-full flex flex-col">
+      <div className="p-3 border-b bg-sidebar/60 backdrop-blur-sm sticky top-0 z-10">
+        <EntitySubnav
+          items={[
+            { label: "Resumen", href: `/clients/${client.id}/overview` },
+            { label: "Personas", href: `/clients/${client.id}/persons` },
+            { label: "Casos", href: `/clients/${client.id}/cases` },
+            { label: "Docs", href: `/clients/${client.id}/files` },
+            { label: "Borradores", href: `/clients/${client.id}/drafts` },
+            { label: "Export", href: `/clients/${client.id}/export` },
+          ]}
+        />
+      </div>
+
+      <div className="flex-1 min-h-0">
+        <ClientManagementPanel client={client} persons={persons} files={files} cases={cases} />
+        {(personsLoading || casesLoading) && (
+          <div className="px-4 pb-4 text-xs text-muted-foreground">Actualizando…</div>
+        )}
+      </div>
     </div>
   );
 
