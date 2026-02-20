@@ -55,6 +55,27 @@ export default function ScopedChatWorkspace({
 
   const [showChat, setShowChat] = useState(true);
 
+  // Persist per scope so the UI feels intentional ("if I hide chat, keep it hidden")
+  useEffect(() => {
+    try {
+      const key = `legis.scopedWorkspace.showChat:${scopeBasePath}`;
+      const raw = window.localStorage.getItem(key);
+      if (raw === null) return;
+      setShowChat(raw === "true");
+    } catch {
+      // ignore
+    }
+  }, [scopeBasePath]);
+
+  useEffect(() => {
+    try {
+      const key = `legis.scopedWorkspace.showChat:${scopeBasePath}`;
+      window.localStorage.setItem(key, String(showChat));
+    } catch {
+      // ignore
+    }
+  }, [scopeBasePath, showChat]);
+
   const [chats, setChats] = useState<Array<{ id: string; title?: string | null }>>([]);
   const [loadingChats, setLoadingChats] = useState(false);
   const [chatId, setChatId] = useState<string | null>(null);
@@ -383,58 +404,47 @@ export default function ScopedChatWorkspace({
         </Tabs>
       </div>
 
-      <div
-        className={cn(
-          "hidden lg:grid h-full overflow-hidden",
-          showChat ? "grid-cols-[380px_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)]"
-        )}
-      >
-        {/* Left: panels */}
-        {showChat ? (
-          <div className="border-r bg-sidebar overflow-hidden">
-            <Tabs defaultValue="info" className="h-full flex flex-col overflow-hidden">
-              <TabsList className="grid grid-cols-2 rounded-none shrink-0 sticky top-0 z-10 bg-sidebar">
-                <TabsTrigger value="info" className="gap-2">
+      <div className="hidden lg:block h-full overflow-hidden">
+        <div
+          className={cn(
+            "h-full overflow-hidden grid",
+            showChat ? "grid-cols-[380px_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)]"
+          )}
+        >
+          {/* Left: panels (always) */}
+          <div className={cn("bg-sidebar overflow-hidden", showChat ? "border-r" : "")}
+          >
+            <div className="h-full flex flex-col overflow-hidden">
+              <div className="p-2 border-b bg-sidebar/80 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-semibold">
                   <PanelLeft className="h-4 w-4" />
                   Panel
-                </TabsTrigger>
-                <TabsTrigger value="chats" className="gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  Chats
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="info" className="flex-1 min-h-0 m-0 overflow-auto">
-                {rightPanel}
-              </TabsContent>
-              <TabsContent value="chats" className="flex-1 min-h-0 m-0 overflow-hidden">
-                {ChatsList}
-              </TabsContent>
-            </Tabs>
-          </div>
-        ) : null}
+                </div>
+                {!showChat ? (
+                  <Button type="button" variant="outline" size="sm" onClick={() => setShowChat(true)}>
+                    <MessageSquare className="h-4 w-4 mr-1" />
+                    Mostrar chat
+                  </Button>
+                ) : null}
+              </div>
 
-        {/* Main: either chat or (when hidden) the left panels take full width */}
-        <div className="min-w-0 overflow-hidden">
-          {showChat ? (
-            ChatMain
-          ) : (
-            <div className="h-full overflow-auto">
-              <div className="p-3 border-b bg-background/80 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between">
-                <div className="text-sm font-semibold">Panel</div>
-                <Button type="button" variant="outline" size="sm" onClick={() => setShowChat(true)}>
-                  <MessageSquare className="h-4 w-4 mr-1" />
-                  Mostrar chat
-                </Button>
-              </div>
-              {rightPanel}
-              <div className="p-3 border-t">
-                <Button type="button" variant="outline" size="sm" onClick={() => setShowChat(true)}>
-                  <MessageSquare className="h-4 w-4 mr-1" />
-                  Mostrar chat
-                </Button>
-              </div>
+              <Tabs defaultValue="info" className="flex-1 min-h-0 flex flex-col overflow-hidden">
+                <TabsList className="grid grid-cols-2 rounded-none shrink-0">
+                  <TabsTrigger value="info" className="gap-2">Panel</TabsTrigger>
+                  <TabsTrigger value="chats" className="gap-2">Chats</TabsTrigger>
+                </TabsList>
+                <TabsContent value="info" className="flex-1 min-h-0 m-0 overflow-auto">
+                  {rightPanel}
+                </TabsContent>
+                <TabsContent value="chats" className="flex-1 min-h-0 m-0 overflow-hidden">
+                  {ChatsList}
+                </TabsContent>
+              </Tabs>
             </div>
-          )}
+          </div>
+
+          {/* Right: chat (optional) */}
+          {showChat ? <div className="min-w-0 overflow-hidden">{ChatMain}</div> : null}
         </div>
       </div>
     </div>
