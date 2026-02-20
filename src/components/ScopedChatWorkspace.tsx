@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Bot, Plus } from "lucide-react";
+import { Bot, Plus, PanelLeft, MessageSquare, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -52,6 +52,29 @@ export default function ScopedChatWorkspace({
 
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const [showChat, setShowChat] = useState(true);
+
+  // Persist per scope so the UI feels intentional ("if I hide chat, keep it hidden")
+  useEffect(() => {
+    try {
+      const key = `legis.scopedWorkspace.showChat:${scopeBasePath}`;
+      const raw = window.localStorage.getItem(key);
+      if (raw === null) return;
+      setShowChat(raw === "true");
+    } catch {
+      // ignore
+    }
+  }, [scopeBasePath]);
+
+  useEffect(() => {
+    try {
+      const key = `legis.scopedWorkspace.showChat:${scopeBasePath}`;
+      window.localStorage.setItem(key, String(showChat));
+    } catch {
+      // ignore
+    }
+  }, [scopeBasePath, showChat]);
 
   const [chats, setChats] = useState<Array<{ id: string; title?: string | null }>>([]);
   const [loadingChats, setLoadingChats] = useState(false);
@@ -283,9 +306,22 @@ export default function ScopedChatWorkspace({
           <div className="p-2 rounded-lg bg-primary/10">
             <Bot className="h-5 w-5 text-primary" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="text-sm font-semibold">{headerTitle}</div>
             <div className="text-xs text-muted-foreground truncate">{headerSubtitle}</div>
+          </div>
+
+          {/* Desktop: collapse chat so you can focus on panels */}
+          <div className="hidden lg:flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowChat(false)}
+            >
+              <X className="h-4 w-4 mr-1" />
+              Ocultar chat
+            </Button>
           </div>
         </div>
       </div>
@@ -352,7 +388,7 @@ export default function ScopedChatWorkspace({
     </div>
   );
 
-  // Mobile-first: tabs. Desktop: 3-column workspace.
+  // Mobile-first: tabs. Desktop: panels-left + expandable/collapsible chat.
   return (
     <div className="h-[calc(100dvh-0px)] overflow-hidden">
       <div className="lg:hidden h-full overflow-hidden">
@@ -368,10 +404,48 @@ export default function ScopedChatWorkspace({
         </Tabs>
       </div>
 
-      <div className="hidden lg:grid h-full grid-cols-[280px_minmax(0,1fr)_340px] overflow-hidden">
-        <div className="border-r bg-sidebar overflow-hidden">{ChatsList}</div>
-        <div className="min-w-0 overflow-hidden">{ChatMain}</div>
-        <div className="border-l bg-sidebar overflow-auto">{rightPanel}</div>
+      <div className="hidden lg:block h-full overflow-hidden">
+        <div
+          className={cn(
+            "h-full overflow-hidden grid",
+            showChat ? "grid-cols-[380px_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)]"
+          )}
+        >
+          {/* Left: panels (always) */}
+          <div className={cn("bg-sidebar overflow-hidden", showChat ? "border-r" : "")}
+          >
+            <div className="h-full flex flex-col overflow-hidden">
+              <div className="p-2 border-b bg-sidebar/80 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <PanelLeft className="h-4 w-4" />
+                  Panel
+                </div>
+                {!showChat ? (
+                  <Button type="button" variant="outline" size="sm" onClick={() => setShowChat(true)}>
+                    <MessageSquare className="h-4 w-4 mr-1" />
+                    Mostrar chat
+                  </Button>
+                ) : null}
+              </div>
+
+              <Tabs defaultValue="info" className="flex-1 min-h-0 flex flex-col overflow-hidden">
+                <TabsList className="grid grid-cols-2 rounded-none shrink-0">
+                  <TabsTrigger value="info" className="gap-2">Panel</TabsTrigger>
+                  <TabsTrigger value="chats" className="gap-2">Chats</TabsTrigger>
+                </TabsList>
+                <TabsContent value="info" className="flex-1 min-h-0 m-0 overflow-auto">
+                  {rightPanel}
+                </TabsContent>
+                <TabsContent value="chats" className="flex-1 min-h-0 m-0 overflow-hidden">
+                  {ChatsList}
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
+
+          {/* Right: chat (optional) */}
+          {showChat ? <div className="min-w-0 overflow-hidden">{ChatMain}</div> : null}
+        </div>
       </div>
     </div>
   );
