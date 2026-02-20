@@ -7,8 +7,8 @@ import { FolderOpen, Search, FilePenLine, LibraryBig } from "lucide-react";
 
 const items = [
   { label: "Casos", icon: FolderOpen, path: "/cases" },
-  { label: "Buscar", icon: Search, path: "/documents" },
-  { label: "Redactor", icon: FilePenLine, path: "/chat" },
+  { label: "Buscar", icon: Search, path: "/search" },
+  { label: "Redactor", icon: FilePenLine, path: "/draft" },
   { label: "Biblioteca", icon: LibraryBig, path: "/documents" },
 ] as const;
 
