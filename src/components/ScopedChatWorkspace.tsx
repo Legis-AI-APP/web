@@ -77,6 +77,16 @@ export default function ScopedChatWorkspace({
     ];
   }, [scopeLabel]);
 
+  const titleForChat = useCallback(
+    (id: string, title?: string | null) => {
+      if (title && title.trim().length > 0) return title;
+      const idx = chats.findIndex((c) => c.id === id);
+      if (idx >= 0) return `Chat #${idx + 1}`;
+      return `Chat ${id.slice(0, 6)}`;
+    },
+    [chats]
+  );
+
   const refreshChats = useCallback(async () => {
     const res = await fetch(listChatsPath, { method: "GET", credentials: "include" });
     if (!res.ok) return;
@@ -229,7 +239,7 @@ export default function ScopedChatWorkspace({
           <div className="flex flex-col gap-1">
             {chats.map((c) => {
               const active = c.id === chatId;
-              const label = c.title && c.title.trim().length > 0 ? c.title : `Chat ${c.id.slice(0, 6)}`;
+              const label = titleForChat(c.id, c.title);
               return (
                 <button
                   key={c.id}
@@ -251,8 +261,8 @@ export default function ScopedChatWorkspace({
   );
 
   const ChatMain = (
-    <div className="h-full flex flex-col">
-      <div className="px-4 py-3 border-b bg-background/80 backdrop-blur-sm">
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="px-4 py-3 border-b bg-background/80 backdrop-blur-sm shrink-0 sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/10">
             <Bot className="h-5 w-5 text-primary" />
@@ -264,8 +274,8 @@ export default function ScopedChatWorkspace({
         </div>
       </div>
 
-      <div className="flex-1 min-h-0">
-        <Conversation className="h-full">
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <Conversation className="h-full overflow-hidden">
           <ConversationContent>
             {messages.length === 0 ? (
               <ConversationEmptyState title="Arrancamos" description={suggestions[0]} />
@@ -283,7 +293,7 @@ export default function ScopedChatWorkspace({
         </Conversation>
       </div>
 
-      <div className="border-t bg-background px-4 py-3">
+      <div className="border-t bg-background px-4 py-3 shrink-0">
         <PromptInput
           onSubmit={({ text }) => {
             if (!text) return;
@@ -310,24 +320,24 @@ export default function ScopedChatWorkspace({
 
   // Mobile-first: tabs. Desktop: 3-column workspace.
   return (
-    <div className="h-[calc(100dvh-0px)]">
-      <div className="lg:hidden h-full">
-        <Tabs defaultValue="chat" className="h-full flex flex-col">
-          <TabsList className="grid grid-cols-3 rounded-none">
+    <div className="h-[calc(100dvh-0px)] overflow-hidden">
+      <div className="lg:hidden h-full overflow-hidden">
+        <Tabs defaultValue="chat" className="h-full flex flex-col overflow-hidden">
+          <TabsList className="grid grid-cols-3 rounded-none shrink-0 sticky top-0 z-10 bg-background">
             <TabsTrigger value="chat">Chat</TabsTrigger>
             <TabsTrigger value="chats">Chats</TabsTrigger>
             <TabsTrigger value="info">Info</TabsTrigger>
           </TabsList>
-          <TabsContent value="chat" className="flex-1 min-h-0 m-0">{ChatMain}</TabsContent>
-          <TabsContent value="chats" className="flex-1 min-h-0 m-0">{ChatsList}</TabsContent>
-          <TabsContent value="info" className="flex-1 min-h-0 m-0">{rightPanel}</TabsContent>
+          <TabsContent value="chat" className="flex-1 min-h-0 m-0 overflow-hidden">{ChatMain}</TabsContent>
+          <TabsContent value="chats" className="flex-1 min-h-0 m-0 overflow-hidden">{ChatsList}</TabsContent>
+          <TabsContent value="info" className="flex-1 min-h-0 m-0 overflow-auto">{rightPanel}</TabsContent>
         </Tabs>
       </div>
 
-      <div className="hidden lg:grid h-full grid-cols-[280px_minmax(0,1fr)_340px]">
-        <div className="border-r bg-sidebar">{ChatsList}</div>
-        <div className="min-w-0">{ChatMain}</div>
-        <div className="border-l bg-sidebar overflow-y-auto">{rightPanel}</div>
+      <div className="hidden lg:grid h-full grid-cols-[280px_minmax(0,1fr)_340px] overflow-hidden">
+        <div className="border-r bg-sidebar overflow-hidden">{ChatsList}</div>
+        <div className="min-w-0 overflow-hidden">{ChatMain}</div>
+        <div className="border-l bg-sidebar overflow-auto">{rightPanel}</div>
       </div>
     </div>
   );
