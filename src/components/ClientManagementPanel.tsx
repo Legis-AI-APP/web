@@ -3,20 +3,23 @@
 import type { Client } from "@/lib/clients-service";
 import type { ClientPersonDto } from "@/lib/client-persons";
 import type { LegisFile } from "@/lib/legis-file";
+import type { Case } from "@/lib/cases-service";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Phone, MapPin, FileText, Users } from "lucide-react";
+import { Mail, Phone, MapPin, FileText, Users, FolderOpen } from "lucide-react";
 
 export default function ClientManagementPanel({
   client,
   persons,
   files,
+  cases,
 }: {
   client: Client;
   persons: ClientPersonDto[];
   files: LegisFile[];
+  cases: Case[];
 }) {
   return (
     <div className="p-4 space-y-4">
@@ -61,6 +64,27 @@ export default function ClientManagementPanel({
               <span className="truncate">{client.address}</span>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-0" style={{ boxShadow: "none" }}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Casos</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <FolderOpen className="h-4 w-4" />
+            <span>{cases.length} asociados</span>
+          </div>
+          {cases.slice(0, 6).map((c) => (
+            <div key={c.id} className="text-sm">
+              <div className="font-medium truncate" title={c.title}>{c.title}</div>
+              <div className="text-xs text-muted-foreground">{c.status}</div>
+            </div>
+          ))}
+          {cases.length > 6 ? (
+            <div className="text-xs text-muted-foreground">… +{cases.length - 6} más</div>
+          ) : null}
         </CardContent>
       </Card>
 
