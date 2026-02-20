@@ -420,12 +420,24 @@ export default function ScopedChatWorkspace({
                   <PanelLeft className="h-4 w-4" />
                   Panel
                 </div>
-                {!showChat ? (
-                  <Button type="button" variant="outline" size="sm" onClick={() => setShowChat(true)}>
-                    <MessageSquare className="h-4 w-4 mr-1" />
-                    Mostrar chat
-                  </Button>
-                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowChat((v) => !v)}
+                >
+                  {showChat ? (
+                    <>
+                      <X className="h-4 w-4 mr-1" />
+                      Ocultar chat
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquare className="h-4 w-4 mr-1" />
+                      Mostrar chat
+                    </>
+                  )}
+                </Button>
               </div>
 
               <Tabs defaultValue="info" className="flex-1 min-h-0 flex flex-col overflow-hidden">
