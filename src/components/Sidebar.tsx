@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -43,6 +43,27 @@ export default function Sidebar({ chats }: SidebarProps) {
   const isMobile = useIsMobile();
   const [expanded, setExpanded] = useState(false); // solo desktop
   const [open, setOpen] = useState(false); // solo mobile (sheet)
+
+  // Persist global sidebar expand/collapse (desktop)
+  useEffect(() => {
+    if (isMobile) return;
+    try {
+      const raw = window.localStorage.getItem("legis.sidebar.expanded");
+      if (raw === null) return;
+      setExpanded(raw === "true");
+    } catch {
+      // ignore
+    }
+  }, [isMobile]);
+
+  useEffect(() => {
+    if (isMobile) return;
+    try {
+      window.localStorage.setItem("legis.sidebar.expanded", String(expanded));
+    } catch {
+      // ignore
+    }
+  }, [expanded, isMobile]);
 
   const items = useMemo(
     () => [
