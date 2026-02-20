@@ -296,7 +296,23 @@ export default function ScopedChatWorkspace({
             {loadingHistory ? (
               <ConversationEmptyState title="Cargando…" description="Trayendo historial del chat" />
             ) : messages.length === 0 ? (
-              <ConversationEmptyState title="Arrancamos" description={suggestions[0]} />
+              <div className="space-y-4">
+                <ConversationEmptyState title="Arrancamos" description={suggestions[0]} />
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.map((s) => (
+                    <Button
+                      key={s}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={submitting}
+                      onClick={() => void handleSend(s)}
+                    >
+                      {s}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             ) : (
               messages.map((m) => (
                 <Message key={m.id} from={m.role}>
