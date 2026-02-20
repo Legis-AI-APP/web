@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { LegisFile } from "@/lib/legis-file";
 import { motion, Variants } from "framer-motion";
 import ScopedChatWorkspace from "@/components/ScopedChatWorkspace";
+import ClientManagementPanel from "@/components/ClientManagementPanel";
 import ClientPersonDialog from "@/components/dialog/ClientPersonDialog";
 import type { ClientPersonDto } from "@/lib/client-persons";
 
@@ -552,7 +553,7 @@ export default function ClientPage({
               </motion.div>
             </TabsContent>
 
-            <TabsContent value="chat" className="space-y-4">
+            <TabsContent value="chat" className="space-y-4 -m-4 sm:-m-6">
               <ScopedChatWorkspace
                 scopeLabel="Cliente"
                 scopeId={client.id}
@@ -561,17 +562,7 @@ export default function ClientPage({
                 listChatsPath={`/api/clients/${client.id}/chats`}
                 createChatPath={`/api/clients/${client.id}/chats`}
                 askPath={`/api/ai/ask/client/${client.id}`}
-                rightPanel={
-                  <div className="p-4">
-                    {/* UI de management: por ahora reutilizamos el panel existente (info + personas + docs) */}
-                    <div className="text-sm font-semibold mb-2">Gestión</div>
-                    <div className="text-xs text-muted-foreground">{client.document_type}: {client.document}</div>
-                    <div className="mt-4">
-                      <div className="text-xs text-muted-foreground">Tip</div>
-                      <div className="text-sm">En desktop: chats / chat / gestión en 3 columnas. En mobile: tabs.</div>
-                    </div>
-                  </div>
-                }
+                rightPanel={<ClientManagementPanel client={client} persons={persons} files={files} />}
               />
             </TabsContent>
           </Tabs>

@@ -26,7 +26,8 @@ export default function CasePage({
   };
 
   return (
-    <ScopedChatWorkspace
+    <div className="-m-6">
+      <ScopedChatWorkspace
       scopeLabel="Asunto"
       scopeId={oldCase.id}
       headerTitle="IA Legal — Asunto"
@@ -40,5 +41,6 @@ export default function CasePage({
         </div>
       }
     />
+    </div>
   );
 }
