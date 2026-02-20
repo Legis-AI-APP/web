@@ -101,12 +101,15 @@ export default function Sidebar({ chats }: SidebarProps) {
   // ---- UI chunk reutilizable (lovable-style) ----
   // Nota: en /cases/[id] y /clients/[id] ahora usamos un workspace 3-panel (chats/chat/gestión).
   // Para evitar duplicación, el sidebar se vuelve un nav minimal.
+  const mobileBottomNavPaths = new Set(["/cases", "/clients", "/search", "/draft", "/documents"]);
+  const mobileItems = items.filter((i) => !mobileBottomNavPaths.has(i.path));
+
   const NavContent = (
     <div className="p-2 h-full flex flex-col">
       {/* Main Navigation */}
       <div>
         <div className="space-y-1">
-          {items.map(({ label, icon: Icon, path }) => {
+          {(isMobile ? mobileItems : items).map(({ label, icon: Icon, path }) => {
             const active = isActive(path);
             return (
               <button

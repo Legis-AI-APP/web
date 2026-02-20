@@ -3,18 +3,22 @@
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { FolderOpen, Search, FilePenLine, LibraryBig } from "lucide-react";
+import { FolderOpen, Search, FilePenLine, FileText, Users } from "lucide-react";
 
 const items = [
   { label: "Casos", icon: FolderOpen, path: "/cases" },
+  { label: "Clientes", icon: Users, path: "/clients" },
   { label: "Buscar", icon: Search, path: "/search" },
   { label: "Redactor", icon: FilePenLine, path: "/draft" },
-  { label: "Biblioteca", icon: LibraryBig, path: "/documents" },
+  { label: "Docs", icon: FileText, path: "/documents" },
 ] as const;
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
   const router = useRouter();
+
+  // Scoped entity pages have their own internal nav + IA drawer; keep max space.
+  if (/^\/cases\/[^/]+/.test(pathname) || /^\/clients\/[^/]+/.test(pathname)) return null;
 
   const isActive = (path: string) => {
     return pathname === path || pathname.startsWith(path + "/");
@@ -28,7 +32,7 @@ export default function MobileBottomNav() {
         "border-t bg-background/85 backdrop-blur-md"
       )}
     >
-      <div className="grid grid-cols-4 gap-1 p-2">
+      <div className="grid grid-cols-5 gap-1 p-2">
         {items.map(({ label, icon: Icon, path }) => {
           const active = isActive(path);
           return (
