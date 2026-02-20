@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils";
 
 export type ScopedChatWorkspaceProps = {
   scopeLabel: "Asunto" | "Cliente";
-  scopeId: string;
+  scopeBasePath: string; // e.g. /cases/:id or /clients/:id
   headerTitle: string;
   headerSubtitle: string;
   listChatsPath: string; // e.g. /api/cases/:id/chats
@@ -39,7 +39,7 @@ export type ScopedChatWorkspaceProps = {
 
 export default function ScopedChatWorkspace({
   scopeLabel,
-  scopeId,
+  scopeBasePath,
   headerTitle,
   headerSubtitle,
   listChatsPath,
@@ -121,10 +121,10 @@ export default function ScopedChatWorkspace({
     setMessages([]);
 
     // canonical deep-link for shareability
-    router.replace(`/${scopeLabel === "Asunto" ? "cases" : "clients"}/${scopeId}?chatId=${data.chat_id}`);
+    router.replace(`${scopeBasePath}?chatId=${data.chat_id}`);
 
     return data.chat_id;
-  }, [createChatPath, refreshChats, router, scopeLabel, scopeId]);
+  }, [createChatPath, refreshChats, router, scopeLabel, scopeBasePath]);
 
   const ensureChat = useCallback(async (): Promise<string> => {
     if (chatId) return chatId;
@@ -233,7 +233,7 @@ export default function ScopedChatWorkspace({
               return (
                 <button
                   key={c.id}
-                  onClick={() => router.replace(`/${scopeLabel === "Asunto" ? "cases" : "clients"}/${scopeId}?chatId=${c.id}`)}
+                  onClick={() => router.replace(`${scopeBasePath}?chatId=${c.id}`)}
                   className={cn(
                     "w-full text-left px-2 py-2 rounded-md text-sm transition",
                     active ? "bg-primary text-primary-foreground" : "hover:bg-accent/50"

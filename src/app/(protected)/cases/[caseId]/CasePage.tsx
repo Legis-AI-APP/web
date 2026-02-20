@@ -29,7 +29,7 @@ export default function CasePage({
     <div className="-m-6">
       <ScopedChatWorkspace
       scopeLabel="Asunto"
-      scopeId={oldCase.id}
+      scopeBasePath={`/cases/${oldCase.id}`}
       headerTitle="IA Legal — Asunto"
       headerSubtitle={oldCase.title}
       listChatsPath={`/api/cases/${oldCase.id}/chats`}

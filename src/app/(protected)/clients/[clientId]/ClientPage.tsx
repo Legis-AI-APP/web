@@ -556,7 +556,7 @@ export default function ClientPage({
             <TabsContent value="chat" className="space-y-4 -m-4 sm:-m-6">
               <ScopedChatWorkspace
                 scopeLabel="Cliente"
-                scopeId={client.id}
+                scopeBasePath={`/clients/${client.id}`}
                 headerTitle="IA Legal — Cliente"
                 headerSubtitle={`${client.first_name} ${client.last_name}`}
                 listChatsPath={`/api/clients/${client.id}/chats`}
