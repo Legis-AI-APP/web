@@ -26,21 +26,21 @@ export default function CasePage({
   };
 
   return (
-    <div className="-m-6">
+    <div className="-m-6 h-[calc(100dvh-0px)]">
       <ScopedChatWorkspace
-      scopeLabel="Asunto"
-      scopeBasePath={`/cases/${oldCase.id}`}
-      headerTitle="IA Legal — Asunto"
-      headerSubtitle={oldCase.title}
-      listChatsPath={`/api/cases/${oldCase.id}/chats`}
-      createChatPath={`/api/cases/${oldCase.id}/chats`}
-      askPath={`/api/ai/ask/case/${oldCase.id}`}
-      rightPanel={
-        <div className="h-full">
-          <CaseDetailPanel mode="sidebar" isOpen={true} onClose={() => {}} caseData={caseData} />
-        </div>
-      }
-    />
+        scopeLabel="Asunto"
+        scopeBasePath={`/cases/${oldCase.id}`}
+        headerTitle="IA Legal — Asunto"
+        headerSubtitle={oldCase.title}
+        listChatsPath={`/api/cases/${oldCase.id}/chats`}
+        createChatPath={`/api/cases/${oldCase.id}/chats`}
+        askPath={`/api/ai/ask/case/${oldCase.id}`}
+        rightPanel={
+          <div className="h-full">
+            <CaseDetailPanel mode="sidebar" isOpen={true} onClose={() => {}} caseData={caseData} />
+          </div>
+        }
+      />
     </div>
   );
 }

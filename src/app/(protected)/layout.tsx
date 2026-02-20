@@ -13,7 +13,11 @@ export default async function ProtectedLayout({
     return (
       <div className="flex h-[100dvh] overflow-hidden">
         <Sidebar chats={chats} />
-        <main className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden">
+        {/*
+          Default shell spacing matches the general pages.
+          Full-screen pages can opt-out by wrapping content with -m-6.
+        */}
+        <main className="flex flex-col flex-1 min-w-0 min-h-0 p-6 overflow-y-auto">
           {children}
         </main>
       </div>
