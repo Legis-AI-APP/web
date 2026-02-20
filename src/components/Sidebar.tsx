@@ -21,8 +21,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import LegisLogo from "@/components/LegisLogo";
-import CaseSidebar from "@/components/CaseSidebar";
-import ClientSidebar from "@/components/ClientSidebar";
+// (scoped workspaces render their own chat list + management panels)
 
 type SidebarProps = {
   chats: Omit<Chat, "messages">[];
@@ -76,63 +75,47 @@ export default function Sidebar({ chats }: SidebarProps) {
   const clientId = getClientIdFromPath(pathname);
   const isCaseContext = Boolean(caseId);
   const isClientContext = Boolean(clientId);
+  const isScopedContext = isCaseContext || isClientContext;
 
   // ---- UI chunk reutilizable (lovable-style) ----
+  // Nota: en /cases/[id] y /clients/[id] ahora usamos un workspace 3-panel (chats/chat/gestión).
+  // Para evitar duplicación, el sidebar se vuelve un nav minimal.
   const NavContent = (
     <div className="p-2 h-full flex flex-col">
-      {isCaseContext ? (
-        <div className="flex-1 overflow-hidden">
-          <CaseSidebar caseId={caseId!} />
+      {/* Main Navigation */}
+      <div>
+        <div className="space-y-1">
+          {items.map(({ label, icon: Icon, path }) => {
+            const active = isActive(path);
+            return (
+              <button
+                key={path}
+                onClick={() => {
+                  router.push(path);
+                  if (isMobile) setOpen(false);
+                }}
+                className={cn(
+                  "w-full flex items-center gap-2 p-2 pt-1.5 pb-1.5 rounded-md text-sm transition-all duration-200",
+                  active ? "bg-primary text-primary-foreground" : "hover:bg-accent/50",
+                  expanded ? null : "justify-center",
+                  isMobile ? "justify-start" : null,
+                )}
+              >
+                <Icon className="h-4 w-4 min-w-4" />
+                {(!isMobile && expanded) || isMobile ? <span>{label}</span> : null}
+              </button>
+            );
+          })}
         </div>
-      ) : isClientContext ? (
-        <div className="flex-1 overflow-hidden">
-          <ClientSidebar clientId={clientId!} />
-        </div>
-      ) : (
+      </div>
+
+      {/* Context panel solo en pantallas donde siga sumando */}
+      {!isScopedContext ? (
         <>
-          {/* Main Navigation */}
-          <div>
-            <div className="space-y-1">
-              {items.map(({ label, icon: Icon, path }) => {
-                const active = isActive(path);
-                return (
-                  <button
-                    key={path}
-                    onClick={() => {
-                      router.push(path);
-                      if (isMobile) setOpen(false);
-                    }}
-                    className={cn(
-                      "w-full flex items-center gap-2 p-2 pt-1.5 pb-1.5 rounded-md text-sm transition-all duration-200",
-                      active
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-accent/50",
-                      expanded ? null : "justify-center",
-                      isMobile ? "justify-start" : null,
-                    )}
-                  >
-                    <Icon className="h-4 w-4 min-w-4" />
-                    {(!isMobile && expanded) || isMobile ? (
-                      <span>{label}</span>
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Quick Actions (opcional) */}
-          {((!isMobile && expanded) || isMobile) && (
-            <div className="mt-2 space-y-2" />
-          )}
-
           {/* Chats recientes */}
           {((!isMobile && expanded) || isMobile) && (
             <div className="mt-5 pt-2 border-t flex-1 flex flex-col overflow-hidden">
-              <p className="mt-1 mb-2 text-xs text-muted-foreground px-1.5">
-                Chats recientes
-              </p>
-
+              <p className="mt-1 mb-2 text-xs text-muted-foreground px-1.5">Chats recientes</p>
               <div className="flex-1 overflow-y-auto flex flex-col gap-1">
                 {chats
                   .toReversed()
@@ -148,9 +131,7 @@ export default function Sidebar({ chats }: SidebarProps) {
                         }}
                         className={cn(
                           "w-full flex items-center gap-2 pt-2 pb-2 rounded-md text-sm transition-all duration-200 truncate px-2",
-                          active
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-accent/50",
+                          active ? "bg-primary text-primary-foreground" : "hover:bg-accent/50",
                         )}
                         title={chat.title}
                       >
@@ -162,7 +143,7 @@ export default function Sidebar({ chats }: SidebarProps) {
             </div>
           )}
         </>
-      )}
+      ) : null}
 
       {/* Footer - Logout Button */}
       <div className="mt-auto pt-2">
@@ -175,9 +156,7 @@ export default function Sidebar({ chats }: SidebarProps) {
           )}
         >
           <LogOut className="h-4 w-4" />
-          {((!isMobile && expanded) || isMobile) && (
-            <span className="ml-2">Cerrar sesión</span>
-          )}
+          {((!isMobile && expanded) || isMobile) && <span className="ml-2">Cerrar sesión</span>}
         </Button>
       </div>
     </div>
