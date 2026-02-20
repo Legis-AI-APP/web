@@ -89,15 +89,17 @@ export default function ClientPage({
   );
 
   return (
-    <ScopedChatWorkspace
-      scopeLabel="Cliente"
-      scopeBasePath={`/clients/${client.id}`}
-      headerTitle="IA Legal — Cliente"
-      headerSubtitle={`${client.first_name} ${client.last_name}`}
-      listChatsPath={`/api/clients/${client.id}/chats`}
-      createChatPath={`/api/clients/${client.id}/chats`}
-      askPath={`/api/ai/ask/client/${client.id}`}
-      rightPanel={rightPanel}
-    />
+    <div className="-m-6 h-[calc(100dvh-0px)]">
+      <ScopedChatWorkspace
+        scopeLabel="Cliente"
+        scopeBasePath={`/clients/${client.id}`}
+        headerTitle="IA Legal — Cliente"
+        headerSubtitle={`${client.first_name} ${client.last_name}`}
+        listChatsPath={`/api/clients/${client.id}/chats`}
+        createChatPath={`/api/clients/${client.id}/chats`}
+        askPath={`/api/ai/ask/client/${client.id}`}
+        rightPanel={rightPanel}
+      />
+    </div>
   );
 }
