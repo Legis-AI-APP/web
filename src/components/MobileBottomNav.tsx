@@ -17,7 +17,6 @@ export default function MobileBottomNav() {
   const router = useRouter();
 
   const isActive = (path: string) => {
-    if (path === "/chat") return pathname.startsWith("/chat");
     return pathname === path || pathname.startsWith(path + "/");
   };
 
