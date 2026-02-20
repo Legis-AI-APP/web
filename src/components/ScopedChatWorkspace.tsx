@@ -8,6 +8,7 @@ import { Bot, Plus, PanelLeft, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Conversation,
   ConversationContent,
@@ -388,22 +389,49 @@ export default function ScopedChatWorkspace({
     </div>
   );
 
-  // Mobile-first: tabs. Desktop: panels-left + expandable/collapsible chat.
+  // Mobile-first: case/client is the axis. IA is a contextual drawer.
   return (
     <div className="h-[calc(100dvh-0px)] overflow-hidden">
-      <div className="lg:hidden h-full overflow-hidden">
-        <Tabs defaultValue="chat" className="h-full flex flex-col overflow-hidden">
-          <TabsList className="grid grid-cols-3 rounded-none shrink-0 sticky top-0 z-10 bg-background">
-            <TabsTrigger value="chat">Chat</TabsTrigger>
-            <TabsTrigger value="chats">Chats</TabsTrigger>
-            <TabsTrigger value="info">Info</TabsTrigger>
+      <div className="lg:hidden h-full overflow-hidden relative">
+        <Tabs defaultValue="info" className="h-full flex flex-col overflow-hidden">
+          <TabsList className="grid grid-cols-2 rounded-none shrink-0 sticky top-0 z-10 bg-background">
+            <TabsTrigger value="info" className="gap-2">
+              <PanelLeft className="h-4 w-4" />
+              Panel
+            </TabsTrigger>
+            <TabsTrigger value="chats" className="gap-2">
+              Chats
+            </TabsTrigger>
           </TabsList>
-          <TabsContent value="chat" className="flex-1 min-h-0 m-0 overflow-hidden">{ChatMain}</TabsContent>
-          <TabsContent value="chats" className="flex-1 min-h-0 m-0 overflow-hidden">{ChatsList}</TabsContent>
-          <TabsContent value="info" className="flex-1 min-h-0 m-0 overflow-auto">{rightPanel}</TabsContent>
+
+          <TabsContent value="info" className="flex-1 min-h-0 m-0 overflow-auto">
+            {rightPanel}
+          </TabsContent>
+          <TabsContent value="chats" className="flex-1 min-h-0 m-0 overflow-hidden">
+            {ChatsList}
+          </TabsContent>
         </Tabs>
+
+        {/* IA drawer trigger */}
+        <Sheet open={showChat} onOpenChange={setShowChat}>
+          <SheetTrigger asChild>
+            <Button
+              type="button"
+              size="icon"
+              className="absolute bottom-4 right-4 rounded-full shadow-lg"
+              aria-label="Abrir asistente IA"
+              title="Abrir IA"
+            >
+              <Sparkles className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="p-0 h-[88dvh]">
+            <div className="h-full overflow-hidden">{ChatMain}</div>
+          </SheetContent>
+        </Sheet>
       </div>
 
+      {/* Desktop: panels-left + expandable/collapsible chat. */}
       <div className="hidden lg:block h-full overflow-hidden relative">
         <div
           className={cn(
@@ -412,8 +440,7 @@ export default function ScopedChatWorkspace({
           )}
         >
           {/* Left: panels (always) */}
-          <div className={cn("bg-sidebar overflow-hidden", showChat ? "border-r" : "")}
-          >
+          <div className={cn("bg-sidebar overflow-hidden", showChat ? "border-r" : "")}>
             <div className="h-full flex flex-col overflow-hidden">
               <div className="p-2 border-b bg-sidebar/80 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm font-semibold">
@@ -451,7 +478,6 @@ export default function ScopedChatWorkspace({
           {showChat ? <div className="min-w-0 overflow-hidden">{ChatMain}</div> : null}
         </div>
 
-        {/* When hidden, keep a visual entrypoint to open IA */}
         {!showChat ? (
           <Button
             type="button"
