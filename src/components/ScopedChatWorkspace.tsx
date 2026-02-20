@@ -54,6 +54,7 @@ export default function ScopedChatWorkspace({
   const [submitting, setSubmitting] = useState(false);
 
   const [chats, setChats] = useState<Array<{ id: string; title?: string | null }>>([]);
+  const [loadingChats, setLoadingChats] = useState(false);
   const [chatId, setChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -88,18 +89,31 @@ export default function ScopedChatWorkspace({
   );
 
   const refreshChats = useCallback(async () => {
-    const res = await fetch(listChatsPath, { method: "GET", credentials: "include" });
-    if (!res.ok) return;
+    setLoadingChats(true);
+    try {
+      const res = await fetch(listChatsPath, { method: "GET", credentials: "include" });
+      if (!res.ok) return;
 
-    const json = (await res.json()) as Array<{ id: string; title?: string | null }>;
-    setChats(json);
+      const json = (await res.json()) as Array<{ id: string; title?: string | null }>;
+      setChats(json);
 
-    const fromUrl = searchParams.get("chatId");
-    if (!chatId) {
-      if (fromUrl) setChatId(fromUrl);
-      else if (json.length > 0) setChatId(json[0]!.id);
+      const fromUrl = searchParams.get("chatId");
+
+      // Canonical behavior:
+      // - if URL has chatId -> follow it
+      // - else if we have chats -> redirect to first chat (deep-link)
+      // - else -> stay without chatId until user creates one
+      if (fromUrl) {
+        setChatId(fromUrl);
+      } else if (json.length > 0) {
+        const first = json[0]!.id;
+        setChatId(first);
+        router.replace(`${scopeBasePath}?chatId=${first}`);
+      }
+    } finally {
+      setLoadingChats(false);
     }
-  }, [listChatsPath, searchParams, chatId]);
+  }, [listChatsPath, router, scopeBasePath, searchParams]);
 
   const loadChatHistory = useCallback(async (id: string) => {
     setLoadingHistory(true);
@@ -204,7 +218,7 @@ export default function ScopedChatWorkspace({
     void refreshChats();
   }, [refreshChats]);
 
-  // follow url changes
+  // follow url changes (back/forward, manual edit)
   useEffect(() => {
     const fromUrl = searchParams.get("chatId");
     if (fromUrl && fromUrl !== chatId) setChatId(fromUrl);
@@ -216,7 +230,7 @@ export default function ScopedChatWorkspace({
 
   const ChatsList = (
     <div className="h-full flex flex-col">
-      <div className="px-4 py-3 flex items-center justify-between">
+      <div className="px-4 py-3 flex items-center justify-between shrink-0">
         <div>
           <div className="text-sm font-semibold">Chats</div>
           <div className="text-xs text-muted-foreground">{scopeLabel}</div>
@@ -225,7 +239,7 @@ export default function ScopedChatWorkspace({
           variant="outline"
           size="sm"
           onClick={() => void createNewChat().catch((e) => toast.error(String(e)))}
-          disabled={submitting}
+          disabled={submitting || loadingChats}
         >
           <Plus className="h-4 w-4 mr-1" />
           Nuevo
@@ -233,7 +247,9 @@ export default function ScopedChatWorkspace({
       </div>
       <Separator />
       <div className="flex-1 overflow-y-auto p-2">
-        {chats.length === 0 ? (
+        {loadingChats ? (
+          <div className="text-xs text-muted-foreground p-2">Cargando chats…</div>
+        ) : chats.length === 0 ? (
           <div className="text-xs text-muted-foreground p-2">Sin chats todavía</div>
         ) : (
           <div className="flex flex-col gap-1">
@@ -277,7 +293,9 @@ export default function ScopedChatWorkspace({
       <div className="flex-1 min-h-0 overflow-hidden">
         <Conversation className="h-full overflow-hidden">
           <ConversationContent>
-            {messages.length === 0 ? (
+            {loadingHistory ? (
+              <ConversationEmptyState title="Cargando…" description="Trayendo historial del chat" />
+            ) : messages.length === 0 ? (
               <ConversationEmptyState title="Arrancamos" description={suggestions[0]} />
             ) : (
               messages.map((m) => (
