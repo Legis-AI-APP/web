@@ -4,8 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Bot, Menu } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Bot, Menu, Plus } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Chat, ChatMessage } from "@/lib/chats-service";
 import { askGeminiStream } from "@/lib/ask-gemini-stream";
@@ -22,6 +22,13 @@ import {
   PromptInputFooter,
   PromptInputButton,
 } from "@/components/ai-elements/prompt-input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ClientChatAreaProps {
   client: {
@@ -38,16 +45,16 @@ interface ClientChatAreaProps {
 export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaProps) {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const [clientChats, setClientChats] = useState<Array<{ id: string; title?: string | null }>>([]);
   const [chatId, setChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  void loadingHistory;
   const bufferRef = useRef<string[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const isMobile = useIsMobile();
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const suggestions = useMemo(
@@ -59,6 +66,25 @@ export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaPr
     ],
     [client.first_name, client.last_name]
   );
+
+  const refreshClientChats = useCallback(async () => {
+    const res = await fetch(`/api/clients/${client.id}/chats`, {
+      method: "GET",
+      credentials: "include",
+    });
+    if (!res.ok) return;
+
+    const json = (await res.json()) as Array<{ id: string; title?: string | null }>;
+    setClientChats(json);
+
+    // allow deep-linking via ?chatId=
+    const fromUrl = searchParams.get("chatId");
+
+    if (!chatId) {
+      if (fromUrl) setChatId(fromUrl);
+      else if (json.length > 0) setChatId(json[0]!.id);
+    }
+  }, [client.id, searchParams, chatId]);
 
   const loadChatHistory = useCallback(async (id: string) => {
     setLoadingHistory(true);
@@ -84,13 +110,12 @@ export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaPr
     if (!res.ok) throw new Error("No se pudo crear el chat del cliente");
     const data = (await res.json()) as { chat_id: string };
 
-    // deep link
-    router.replace(`/clients/${client.id}?chatId=${data.chat_id}`);
+    await refreshClientChats();
     setChatId(data.chat_id);
     setMessages([]);
 
     return data.chat_id;
-  }, [client.id, router]);
+  }, [client.id, refreshClientChats]);
 
   const ensureClientChat = useCallback(async (): Promise<string> => {
     if (chatId) return chatId;
@@ -155,6 +180,10 @@ export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaPr
   }, []);
 
   useEffect(() => {
+    void refreshClientChats();
+  }, [refreshClientChats]);
+
+  useEffect(() => {
     const fromUrl = searchParams.get("chatId");
     if (fromUrl && fromUrl !== chatId) {
       setChatId(fromUrl);
@@ -177,24 +206,59 @@ export default function ClientChatArea({ client, onOpenPanel }: ClientChatAreaPr
         variants={fadeIn}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="p-2 rounded-lg bg-primary/10">
               <Bot className="h-5 w-5 text-primary" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="text-sm font-semibold">IA Legal — Cliente</div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground truncate">
                 {client.first_name} {client.last_name}
               </div>
             </div>
           </div>
 
-          {isMobile && onOpenPanel && (
-            <Button variant="ghost" size="icon" onClick={onOpenPanel} className="h-9 w-9">
-              <Menu className="h-5 w-5" />
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
+              <Select
+                value={chatId ?? undefined}
+                onValueChange={(v) => setChatId(v)}
+                disabled={submitting || loadingHistory}
+              >
+                <SelectTrigger className="w-[240px]">
+                  <SelectValue placeholder="Elegí un chat" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clientChats.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.title && c.title.trim().length > 0 ? c.title : `Chat ${c.id.slice(0, 6)}`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void createNewClientChat().catch((e) =>
+                    toast.error(e instanceof Error ? e.message : "No se pudo crear el chat")
+                  );
+                }}
+                disabled={submitting}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Nuevo
+              </Button>
+            </div>
+
+            {isMobile && onOpenPanel && (
+              <Button variant="ghost" size="icon" onClick={onOpenPanel} className="h-9 w-9">
+                <Menu className="h-5 w-5" />
+              </Button>
+            )}
+          </div>
         </div>
       </motion.div>
 
