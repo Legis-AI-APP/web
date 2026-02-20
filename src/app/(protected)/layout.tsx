@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Sidebar from "@/components/Sidebar";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import { getChats } from "@/lib/chats-service";
 import { redirect } from "next/navigation";
 
@@ -17,9 +18,10 @@ export default async function ProtectedLayout({
           Default shell spacing matches the general pages.
           Full-screen pages can opt-out by wrapping content with -m-6.
         */}
-        <main className="flex flex-col flex-1 min-w-0 min-h-0 p-6 overflow-y-auto">
+        <main className="flex flex-col flex-1 min-w-0 min-h-0 p-6 overflow-y-auto pb-24 md:pb-6">
           {children}
         </main>
+        <MobileBottomNav />
       </div>
     );
   } catch (error: unknown) {
