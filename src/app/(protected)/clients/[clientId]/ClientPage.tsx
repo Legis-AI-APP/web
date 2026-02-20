@@ -53,12 +53,19 @@ export default function ClientPage({
     () => async () => {
       setCasesLoading(true);
       try {
-        const res = await fetch(`/api/cases`, {
+        const res = await fetch(`/api/clients/${client.id}/cases`, {
           credentials: "include",
         });
         if (!res.ok) throw new Error(await res.text());
-        const json = (await res.json()) as Case[];
-        setCases(json.filter((c) => c.client_id === client.id));
+        const json = (await res.json()) as Array<Record<string, unknown>>;
+        // Support both snake_case (web legacy) and camelCase (api contract)
+        const normalized = json.map((c) => ({
+          ...c,
+          client_id: c.client_id ?? c.clientId,
+          created_at: c.created_at ?? c.createdAt,
+          updated_at: c.updated_at ?? c.updatedAt,
+        })) as Case[];
+        setCases(normalized);
       } catch (e: unknown) {
         toast.error(e instanceof Error ? e.message : "No se pudo cargar casos");
       } finally {
