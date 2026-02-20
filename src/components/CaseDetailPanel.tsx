@@ -22,6 +22,7 @@ interface CaseDetailPanelProps {
     isOpen: boolean;
     onClose: () => void;
     mode?: "page" | "sidebar";
+    initialTab?: "movements" | "documents" | "dates" | "notes";
     caseData: {
         id: string;
         title: string;
@@ -98,6 +99,7 @@ export default function CaseDetailPanel({
     isOpen,
     onClose,
     mode = "page",
+    initialTab = "movements",
     caseData,
     onBackToCases,
     onBackToClient,
@@ -425,7 +427,7 @@ export default function CaseDetailPanel({
 
                 {/* Tabs */}
                 <div className="flex-1 overflow-hidden">
-                    <Tabs defaultValue="movements" className="h-full flex flex-col">
+                    <Tabs defaultValue={initialTab} className="h-full flex flex-col">
                         <div className="px-4 pt-4">
                             <TabsList className="grid w-full grid-cols-4 bg-sidebar rounded-lg">
                                 <TabsTrigger value="movements" className="text-xs">
@@ -523,7 +525,7 @@ export default function CaseDetailPanel({
 
                     {/* Tabs */}
                     <div className="flex-1 overflow-hidden">
-                        <Tabs defaultValue="movements" className="h-full flex flex-col">
+                        <Tabs defaultValue={initialTab} className="h-full flex flex-col">
                             <div className="px-4 pt-4">
                                 <TabsList className="grid w-full grid-cols-4 bg-sidebar rounded-lg">
                                     <TabsTrigger value="movements" className="text-xs">

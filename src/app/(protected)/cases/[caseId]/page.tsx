@@ -1,5 +1,4 @@
-import { getCase, getCaseFiles } from "@/lib/cases-service";
-import CasePage from "./CasePage";
+import { redirect } from "next/navigation";
 
 type PageProps = {
   params: Promise<{
@@ -9,9 +8,5 @@ type PageProps = {
 
 export default async function Page({ params }: PageProps) {
   const { caseId } = await params;
-  const [oldCase, files] = await Promise.all([
-    getCase(caseId),
-    getCaseFiles(caseId),
-  ]);
-  return <CasePage oldCase={oldCase} files={files} />;
+  redirect(`/cases/${caseId}/overview`);
 }

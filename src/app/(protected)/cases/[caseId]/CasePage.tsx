@@ -9,9 +9,11 @@ import CaseDetailPanel from "@/components/CaseDetailPanel";
 export default function CasePage({
   oldCase,
   files: _files,
+  initialPanelTab,
 }: {
   oldCase: Case;
   files: LegisFile[];
+  initialPanelTab?: "movements" | "documents" | "dates" | "notes";
 }) {
   void _files;
 
@@ -37,7 +39,13 @@ export default function CasePage({
         askPath={`/api/ai/ask/case/${oldCase.id}`}
         rightPanel={
           <div className="h-full">
-            <CaseDetailPanel mode="sidebar" isOpen={true} onClose={() => {}} caseData={caseData} />
+            <CaseDetailPanel
+              mode="sidebar"
+              isOpen={true}
+              onClose={() => {}}
+              caseData={caseData}
+              initialTab={initialPanelTab}
+            />
           </div>
         }
       />
