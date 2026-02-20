@@ -11,9 +11,9 @@ export default async function ProtectedLayout({
   try {
     const chats = await getChats();
     return (
-      <div className="flex h-screen">
+      <div className="flex h-[100dvh] overflow-hidden">
         <Sidebar chats={chats} />
-        <main className="flex flex-col flex-1 p-6 overflow-y-auto">
+        <main className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden">
           {children}
         </main>
       </div>

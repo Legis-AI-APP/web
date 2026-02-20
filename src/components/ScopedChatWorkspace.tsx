@@ -54,6 +54,7 @@ export default function ScopedChatWorkspace({
   const [submitting, setSubmitting] = useState(false);
 
   const [chats, setChats] = useState<Array<{ id: string; title?: string | null }>>([]);
+  const [loadingChats, setLoadingChats] = useState(false);
   const [chatId, setChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -77,19 +78,42 @@ export default function ScopedChatWorkspace({
     ];
   }, [scopeLabel]);
 
+  const titleForChat = useCallback(
+    (id: string, title?: string | null) => {
+      if (title && title.trim().length > 0) return title;
+      const idx = chats.findIndex((c) => c.id === id);
+      if (idx >= 0) return `Chat #${idx + 1}`;
+      return `Chat ${id.slice(0, 6)}`;
+    },
+    [chats]
+  );
+
   const refreshChats = useCallback(async () => {
-    const res = await fetch(listChatsPath, { method: "GET", credentials: "include" });
-    if (!res.ok) return;
+    setLoadingChats(true);
+    try {
+      const res = await fetch(listChatsPath, { method: "GET", credentials: "include" });
+      if (!res.ok) return;
 
-    const json = (await res.json()) as Array<{ id: string; title?: string | null }>;
-    setChats(json);
+      const json = (await res.json()) as Array<{ id: string; title?: string | null }>;
+      setChats(json);
 
-    const fromUrl = searchParams.get("chatId");
-    if (!chatId) {
-      if (fromUrl) setChatId(fromUrl);
-      else if (json.length > 0) setChatId(json[0]!.id);
+      const fromUrl = searchParams.get("chatId");
+
+      // Canonical behavior:
+      // - if URL has chatId -> follow it
+      // - else if we have chats -> redirect to first chat (deep-link)
+      // - else -> stay without chatId until user creates one
+      if (fromUrl) {
+        setChatId(fromUrl);
+      } else if (json.length > 0) {
+        const first = json[0]!.id;
+        setChatId(first);
+        router.replace(`${scopeBasePath}?chatId=${first}`);
+      }
+    } finally {
+      setLoadingChats(false);
     }
-  }, [listChatsPath, searchParams, chatId]);
+  }, [listChatsPath, router, scopeBasePath, searchParams]);
 
   const loadChatHistory = useCallback(async (id: string) => {
     setLoadingHistory(true);
@@ -194,7 +218,7 @@ export default function ScopedChatWorkspace({
     void refreshChats();
   }, [refreshChats]);
 
-  // follow url changes
+  // follow url changes (back/forward, manual edit)
   useEffect(() => {
     const fromUrl = searchParams.get("chatId");
     if (fromUrl && fromUrl !== chatId) setChatId(fromUrl);
@@ -206,7 +230,7 @@ export default function ScopedChatWorkspace({
 
   const ChatsList = (
     <div className="h-full flex flex-col">
-      <div className="px-4 py-3 flex items-center justify-between">
+      <div className="px-4 py-3 flex items-center justify-between shrink-0">
         <div>
           <div className="text-sm font-semibold">Chats</div>
           <div className="text-xs text-muted-foreground">{scopeLabel}</div>
@@ -215,7 +239,7 @@ export default function ScopedChatWorkspace({
           variant="outline"
           size="sm"
           onClick={() => void createNewChat().catch((e) => toast.error(String(e)))}
-          disabled={submitting}
+          disabled={submitting || loadingChats}
         >
           <Plus className="h-4 w-4 mr-1" />
           Nuevo
@@ -223,13 +247,15 @@ export default function ScopedChatWorkspace({
       </div>
       <Separator />
       <div className="flex-1 overflow-y-auto p-2">
-        {chats.length === 0 ? (
+        {loadingChats ? (
+          <div className="text-xs text-muted-foreground p-2">Cargando chats…</div>
+        ) : chats.length === 0 ? (
           <div className="text-xs text-muted-foreground p-2">Sin chats todavía</div>
         ) : (
           <div className="flex flex-col gap-1">
             {chats.map((c) => {
               const active = c.id === chatId;
-              const label = c.title && c.title.trim().length > 0 ? c.title : `Chat ${c.id.slice(0, 6)}`;
+              const label = titleForChat(c.id, c.title);
               return (
                 <button
                   key={c.id}
@@ -251,8 +277,8 @@ export default function ScopedChatWorkspace({
   );
 
   const ChatMain = (
-    <div className="h-full flex flex-col">
-      <div className="px-4 py-3 border-b bg-background/80 backdrop-blur-sm">
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="px-4 py-3 border-b bg-background/80 backdrop-blur-sm shrink-0 sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/10">
             <Bot className="h-5 w-5 text-primary" />
@@ -264,11 +290,29 @@ export default function ScopedChatWorkspace({
         </div>
       </div>
 
-      <div className="flex-1 min-h-0">
-        <Conversation className="h-full">
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <Conversation className="h-full overflow-hidden">
           <ConversationContent>
-            {messages.length === 0 ? (
-              <ConversationEmptyState title="Arrancamos" description={suggestions[0]} />
+            {loadingHistory ? (
+              <ConversationEmptyState title="Cargando…" description="Trayendo historial del chat" />
+            ) : messages.length === 0 ? (
+              <div className="space-y-4">
+                <ConversationEmptyState title="Arrancamos" description={suggestions[0]} />
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.map((s) => (
+                    <Button
+                      key={s}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={submitting}
+                      onClick={() => void handleSend(s)}
+                    >
+                      {s}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             ) : (
               messages.map((m) => (
                 <Message key={m.id} from={m.role}>
@@ -283,7 +327,7 @@ export default function ScopedChatWorkspace({
         </Conversation>
       </div>
 
-      <div className="border-t bg-background px-4 py-3">
+      <div className="border-t bg-background px-4 py-3 shrink-0">
         <PromptInput
           onSubmit={({ text }) => {
             if (!text) return;
@@ -310,24 +354,24 @@ export default function ScopedChatWorkspace({
 
   // Mobile-first: tabs. Desktop: 3-column workspace.
   return (
-    <div className="h-[calc(100dvh-0px)]">
-      <div className="lg:hidden h-full">
-        <Tabs defaultValue="chat" className="h-full flex flex-col">
-          <TabsList className="grid grid-cols-3 rounded-none">
+    <div className="h-[calc(100dvh-0px)] overflow-hidden">
+      <div className="lg:hidden h-full overflow-hidden">
+        <Tabs defaultValue="chat" className="h-full flex flex-col overflow-hidden">
+          <TabsList className="grid grid-cols-3 rounded-none shrink-0 sticky top-0 z-10 bg-background">
             <TabsTrigger value="chat">Chat</TabsTrigger>
             <TabsTrigger value="chats">Chats</TabsTrigger>
             <TabsTrigger value="info">Info</TabsTrigger>
           </TabsList>
-          <TabsContent value="chat" className="flex-1 min-h-0 m-0">{ChatMain}</TabsContent>
-          <TabsContent value="chats" className="flex-1 min-h-0 m-0">{ChatsList}</TabsContent>
-          <TabsContent value="info" className="flex-1 min-h-0 m-0">{rightPanel}</TabsContent>
+          <TabsContent value="chat" className="flex-1 min-h-0 m-0 overflow-hidden">{ChatMain}</TabsContent>
+          <TabsContent value="chats" className="flex-1 min-h-0 m-0 overflow-hidden">{ChatsList}</TabsContent>
+          <TabsContent value="info" className="flex-1 min-h-0 m-0 overflow-auto">{rightPanel}</TabsContent>
         </Tabs>
       </div>
 
-      <div className="hidden lg:grid h-full grid-cols-[280px_minmax(0,1fr)_340px]">
-        <div className="border-r bg-sidebar">{ChatsList}</div>
-        <div className="min-w-0">{ChatMain}</div>
-        <div className="border-l bg-sidebar overflow-y-auto">{rightPanel}</div>
+      <div className="hidden lg:grid h-full grid-cols-[280px_minmax(0,1fr)_340px] overflow-hidden">
+        <div className="border-r bg-sidebar overflow-hidden">{ChatsList}</div>
+        <div className="min-w-0 overflow-hidden">{ChatMain}</div>
+        <div className="border-l bg-sidebar overflow-auto">{rightPanel}</div>
       </div>
     </div>
   );
