@@ -14,7 +14,8 @@ import { Client, uploadClientFile } from "@/lib/clients-service";
 import { useRouter } from "next/navigation";
 import { LegisFile } from "@/lib/legis-file";
 import { motion, Variants } from "framer-motion";
-import ClientChatArea from "@/components/ClientChatArea";
+import ScopedChatWorkspace from "@/components/ScopedChatWorkspace";
+import ClientManagementPanel from "@/components/ClientManagementPanel";
 import ClientPersonDialog from "@/components/dialog/ClientPersonDialog";
 import type { ClientPersonDto } from "@/lib/client-persons";
 
@@ -552,8 +553,17 @@ export default function ClientPage({
               </motion.div>
             </TabsContent>
 
-            <TabsContent value="chat" className="space-y-4">
-              <ClientChatArea client={client} />
+            <TabsContent value="chat" className="space-y-4 -m-4 sm:-m-6">
+              <ScopedChatWorkspace
+                scopeLabel="Cliente"
+                scopeBasePath={`/clients/${client.id}`}
+                headerTitle="IA Legal — Cliente"
+                headerSubtitle={`${client.first_name} ${client.last_name}`}
+                listChatsPath={`/api/clients/${client.id}/chats`}
+                createChatPath={`/api/clients/${client.id}/chats`}
+                askPath={`/api/ai/ask/client/${client.id}`}
+                rightPanel={<ClientManagementPanel client={client} persons={persons} files={files} />}
+              />
             </TabsContent>
           </Tabs>
         </motion.div>
