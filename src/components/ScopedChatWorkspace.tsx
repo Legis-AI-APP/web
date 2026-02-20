@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Bot, Plus, PanelLeft, MessageSquare, X } from "lucide-react";
+import { Bot, Plus, PanelLeft, X, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -404,7 +404,7 @@ export default function ScopedChatWorkspace({
         </Tabs>
       </div>
 
-      <div className="hidden lg:block h-full overflow-hidden">
+      <div className="hidden lg:block h-full overflow-hidden relative">
         <div
           className={cn(
             "h-full overflow-hidden grid",
@@ -420,12 +420,16 @@ export default function ScopedChatWorkspace({
                   <PanelLeft className="h-4 w-4" />
                   Panel
                 </div>
-                {!showChat ? (
-                  <Button type="button" variant="outline" size="sm" onClick={() => setShowChat(true)}>
-                    <MessageSquare className="h-4 w-4 mr-1" />
-                    Mostrar chat
-                  </Button>
-                ) : null}
+                <Button
+                  type="button"
+                  variant={showChat ? "secondary" : "default"}
+                  size="icon"
+                  onClick={() => setShowChat((v) => !v)}
+                  aria-label={showChat ? "Ocultar asistente IA" : "Mostrar asistente IA"}
+                  title={showChat ? "Ocultar IA" : "Mostrar IA"}
+                >
+                  {showChat ? <X className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
+                </Button>
               </div>
 
               <Tabs defaultValue="info" className="flex-1 min-h-0 flex flex-col overflow-hidden">
@@ -446,6 +450,20 @@ export default function ScopedChatWorkspace({
           {/* Right: chat (optional) */}
           {showChat ? <div className="min-w-0 overflow-hidden">{ChatMain}</div> : null}
         </div>
+
+        {/* When hidden, keep a visual entrypoint to open IA */}
+        {!showChat ? (
+          <Button
+            type="button"
+            onClick={() => setShowChat(true)}
+            size="icon"
+            className="absolute bottom-4 right-4 rounded-full shadow-lg"
+            aria-label="Abrir asistente IA"
+            title="Abrir IA"
+          >
+            <Sparkles className="h-5 w-5" />
+          </Button>
+        ) : null}
       </div>
     </div>
   );
