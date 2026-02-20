@@ -53,12 +53,12 @@ export default function ClientPage({
     () => async () => {
       setCasesLoading(true);
       try {
-        const res = await fetch(`/api/clients/${client.id}/cases`, {
+        const res = await fetch(`/api/cases`, {
           credentials: "include",
         });
         if (!res.ok) throw new Error(await res.text());
         const json = (await res.json()) as Case[];
-        setCases(json);
+        setCases(json.filter((c) => c.client_id === client.id));
       } catch (e: unknown) {
         toast.error(e instanceof Error ? e.message : "No se pudo cargar casos");
       } finally {
