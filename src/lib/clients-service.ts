@@ -21,9 +21,7 @@ export const getClients = async () => {
   const requestCookies = await cookies();
   const token = requestCookies.get("session")?.value || "";
   const response = await fetch(`${apiUrl}/api/clients`, {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   if (!response.ok) throw new Error(await response.json());
   return response.json() as Promise<Client[]>;
@@ -33,9 +31,7 @@ export const getClient = async (clientId: string) => {
   const requestCookies = await cookies();
   const token = requestCookies.get("session")?.value || "";
   const response = await fetch(`${apiUrl}/api/clients/${clientId}`, {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   if (!response.ok) throw new Error(await response.json());
   return response.json() as Promise<Client>;
@@ -48,7 +44,7 @@ export const createClient = async (client: Omit<Client, "id">) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: token ? `Bearer ${token}` : "",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(client),
   });
@@ -60,9 +56,7 @@ export const getClientFiles = async (clientId: string) => {
   const requestCookies = await cookies();
   const token = requestCookies.get("session")?.value || "";
   const response = await fetch(`${apiUrl}/api/clients/${clientId}/files`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   if (!response.ok) throw new Error(await response.json());
   return response.json() as Promise<LegisFile[]>;
@@ -122,8 +116,6 @@ export async function uploadClientFile(clientId: string, file: File) {
   await fetch(`${apiUrl}/api/clients/${clientId}/upload`, {
     method: "POST",
     body: form,
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 }

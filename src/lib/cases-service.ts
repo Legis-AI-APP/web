@@ -26,9 +26,7 @@ export const getCases = async () => {
   const requestCookies = await cookies();
   const token = requestCookies.get("session")?.value || "";
   const response = await fetch(`${apiUrl}/api/cases`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   if (!response.ok) throw new Error(await response.json());
   const data = await response.json();
@@ -39,9 +37,7 @@ export const getCase = async (caseId: string) => {
   const requestCookies = await cookies();
   const token = requestCookies.get("session")?.value || "";
   const response = await fetch(`${apiUrl}/api/cases/${caseId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   if (!response.ok) throw new Error(await response.json());
   return response.json() as Promise<Case>;
@@ -56,7 +52,7 @@ export const createCase = async (
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(data),
   });
@@ -68,9 +64,7 @@ export const getCaseFiles = async (caseId: string) => {
   const requestCookies = await cookies();
   const token = requestCookies.get("session")?.value || "";
   const response = await fetch(`${apiUrl}/api/cases/${caseId}/files`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   if (!response.ok) throw new Error(await response.json());
   return response.json() as Promise<LegisFile[]>;
@@ -84,9 +78,7 @@ export const uploadCaseFile = async (caseId: string, file: File) => {
   const response = await fetch(`${apiUrl}/api/cases/${caseId}/upload`, {
     method: "POST",
     body: formData,
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   if (!response.ok) throw new Error(await response.json());
   return response.json() as Promise<LegisFile>;
@@ -102,7 +94,7 @@ export const createCaseEvent = async (
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(event),
   });
@@ -114,9 +106,7 @@ export const getCaseEvents = async (caseId: string) => {
   const requestCookies = await cookies();
   const token = requestCookies.get("session")?.value || "";
   const response = await fetch(`${apiUrl}/api/cases/${caseId}/events`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   if (!response.ok) throw new Error(await response.json());
   return response.json() as Promise<Event[]>;

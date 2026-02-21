@@ -20,9 +20,7 @@ export const getChats = async () => {
   const token = requestCookies.get("session")?.value || "";
 
   const response = await fetch(`${apiUrl}/api/chats`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 
   if (!response.ok) throw new Error(await response.json());
@@ -35,9 +33,7 @@ export const getChat = async (chatId: string) => {
 
   const response = await fetch(`${apiUrl}/api/chats/${chatId}`, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 
   if (!response.ok) {
@@ -53,9 +49,7 @@ export const createChat = async () => {
 
   const response = await fetch(`${apiUrl}/api/chats`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 
   if (!response.ok) throw new Error(await response.json());
