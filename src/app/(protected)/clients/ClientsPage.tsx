@@ -15,16 +15,23 @@ import { motion, Variants } from "framer-motion";
 export default function ClientsPage({ clients }: { clients: Client[] }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [documentTypeFilter, setDocumentTypeFilter] = useState<"all" | "CUIT" | "CUIL" | "CDI">("all");
 
   const filteredClients = useMemo(() => {
-    if (!searchTerm.trim()) return clients;
+    const term = searchTerm.trim().toLowerCase();
 
-    return clients.filter(client =>
-      `${client.first_name} ${client.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.document.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [clients, searchTerm]);
+    return clients.filter((client) => {
+      if (documentTypeFilter !== "all" && client.document_type !== documentTypeFilter) return false;
+
+      if (!term) return true;
+
+      return (
+        `${client.first_name} ${client.last_name}`.toLowerCase().includes(term) ||
+        client.email.toLowerCase().includes(term) ||
+        client.document.toLowerCase().includes(term)
+      );
+    });
+  }, [clients, documentTypeFilter, searchTerm]);
 
   const formatDocumentType = (type: string) => {
     const types: Record<string, string> = {
@@ -101,9 +108,9 @@ export default function ClientsPage({ clients }: { clients: Client[] }) {
 
       {/* Main Content */}
       <div className="px-6 pb-6 sm:px-8 sm:pb-8 max-w-7xl mx-auto space-y-6">
-        {/* Search Section */}
+        {/* Search + Filters */}
         <motion.div
-          className="max-w-lg"
+          className="max-w-2xl space-y-3"
           initial="hidden"
           animate="visible"
           variants={fadeInUp}
@@ -117,6 +124,41 @@ export default function ClientsPage({ clients }: { clients: Client[] }) {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-12 h-12 text-base border-2 focus:border-primary/50 transition-colors"
             />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant={documentTypeFilter === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setDocumentTypeFilter("all")}
+            >
+              Todos
+            </Button>
+            <Button
+              type="button"
+              variant={documentTypeFilter === "CUIT" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setDocumentTypeFilter("CUIT")}
+            >
+              CUIT
+            </Button>
+            <Button
+              type="button"
+              variant={documentTypeFilter === "CUIL" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setDocumentTypeFilter("CUIL")}
+            >
+              CUIL
+            </Button>
+            <Button
+              type="button"
+              variant={documentTypeFilter === "CDI" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setDocumentTypeFilter("CDI")}
+            >
+              CDI
+            </Button>
           </div>
         </motion.div>
 
