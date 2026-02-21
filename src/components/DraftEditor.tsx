@@ -557,6 +557,12 @@ export default function DraftEditor({
             rows={3}
           />
 
+          {missingRequiredForTemplate.length > 0 ? (
+            <div className="text-xs text-muted-foreground">
+              Para usar IA en este template faltan: {missingRequiredForTemplate.join(", ")}.
+            </div>
+          ) : null}
+
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"
