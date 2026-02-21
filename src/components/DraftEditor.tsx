@@ -30,6 +30,7 @@ export default function DraftEditor({
   const [facts, setFacts] = useState("");
   const [goal, setGoal] = useState("");
   const [result, setResult] = useState("");
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
 
   const canPersist = Boolean(storageKey);
 
@@ -45,6 +46,7 @@ export default function DraftEditor({
         setFacts(parsed.facts ?? "");
         setGoal(parsed.goal ?? "");
         setResult(parsed.result ?? "");
+        setLastSavedAt(parsed.updatedAt ?? null);
       } catch {
         // ignore
       }
@@ -55,15 +57,17 @@ export default function DraftEditor({
   const save = useMemo(
     () => () => {
       if (!storageKey) return;
+      const updatedAt = new Date().toISOString();
       const payload: StoredDraft = {
         type: docType,
         jurisdiction,
         facts,
         goal,
         result,
-        updatedAt: new Date().toISOString(),
+        updatedAt,
       };
       localStorage.setItem(storageKey, JSON.stringify(payload));
+      setLastSavedAt(updatedAt);
     },
     [docType, facts, goal, jurisdiction, result, storageKey]
   );
@@ -88,6 +92,7 @@ export default function DraftEditor({
         {canPersist && (
           <p className="text-xs text-muted-foreground mt-1">
             Guardado local automático (este dispositivo). Todavía no sincroniza.
+            {lastSavedAt ? ` Último guardado: ${new Date(lastSavedAt).toLocaleString()}` : ""}
           </p>
         )}
       </div>
