@@ -24,6 +24,7 @@ export default function CasesPage({
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "final">("all");
+  const [clientFilter, setClientFilter] = useState<string>("all");
 
   const clientNameForCase = useMemo(() => {
     const map = new Map<string, string>();
@@ -49,6 +50,8 @@ export default function CasesPage({
       if (statusFilter === "active" && isFinalStatus(case_.status)) return false;
       if (statusFilter === "final" && !isFinalStatus(case_.status)) return false;
 
+      if (clientFilter !== "all" && case_.client_id !== clientFilter) return false;
+
       if (!term) return true;
 
       const clientName = clientNameForCase(case_).toLowerCase();
@@ -58,7 +61,7 @@ export default function CasesPage({
         clientName.includes(term)
       );
     });
-  }, [cases, clientNameForCase, searchTerm, statusFilter]);
+  }, [cases, clientFilter, clientNameForCase, searchTerm, statusFilter]);
 
   const getStatusColor = (statusRaw: string) => {
     const s = (statusRaw || "").toLowerCase();
@@ -179,6 +182,22 @@ export default function CasesPage({
             >
               Finalizados
             </Button>
+          </div>
+
+          <div className="max-w-lg">
+            <div className="text-xs font-medium text-muted-foreground mb-1">Cliente</div>
+            <select
+              className="w-full h-10 rounded-standard border border-border bg-background px-3 text-sm"
+              value={clientFilter}
+              onChange={(e) => setClientFilter(e.currentTarget.value)}
+            >
+              <option value="all">Todos</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {`${c.first_name} ${c.last_name}`.trim() || c.id}
+                </option>
+              ))}
+            </select>
           </div>
         </motion.div>
 
