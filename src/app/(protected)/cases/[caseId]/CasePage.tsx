@@ -11,10 +11,12 @@ export default function CasePage({
   oldCase,
   files: _files,
   initialPanelTab,
+  contextLabel,
 }: {
   oldCase: Case;
   files: LegisFile[];
   initialPanelTab?: "movements" | "documents" | "dates" | "notes";
+  contextLabel?: string;
 }) {
   void _files;
 
@@ -35,6 +37,7 @@ export default function CasePage({
         scopeBasePath={`/cases/${oldCase.id}`}
         headerTitle="IA Legal — Asunto"
         headerSubtitle={oldCase.title}
+        contextLabel={contextLabel}
         listChatsPath={`/api/cases/${oldCase.id}/chats`}
         createChatPath={`/api/cases/${oldCase.id}/chats`}
         askPath={`/api/ai/ask/case/${oldCase.id}`}
