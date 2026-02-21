@@ -69,43 +69,44 @@ export default async function SearchPage({
       </div>
 
       <div className="px-6 pb-6 sm:px-8 sm:pb-8 max-w-3xl mx-auto space-y-4">
+        <Card className="border-0" style={{ boxShadow: "none" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Consulta</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <form className="flex gap-2" action="/search" method="GET">
+              <Input
+                name="q"
+                placeholder="Caso, cliente, email, DNI, palabra clave…"
+                defaultValue={q}
+                autoComplete="off"
+                autoFocus
+              />
+              <Button type="submit">Buscar</Button>
+              {q ? (
+                <Button type="button" variant="outline" asChild>
+                  <Link href="/search">Limpiar</Link>
+                </Button>
+              ) : null}
+            </form>
+            <div className="text-xs text-muted-foreground">Tip: podés apretar Enter para buscar.</div>
+          </CardContent>
+        </Card>
 
-      <Card className="border-0" style={{ boxShadow: "none" }}>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Consulta</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <form className="flex gap-2" action="/search" method="GET">
-            <Input
-              name="q"
-              placeholder="Caso, cliente, email, DNI, palabra clave…"
-              defaultValue={q}
-              autoComplete="off"
-              autoFocus
-            />
-            <Button type="submit">Buscar</Button>
-            {q ? (
-              <Button type="button" variant="outline" asChild>
-                <Link href="/search">Limpiar</Link>
-              </Button>
-            ) : null}
-          </form>
-          <div className="text-xs text-muted-foreground">Tip: podés apretar Enter para buscar.</div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-0" style={{ boxShadow: "none" }}>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Resultados</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {!query ? (
-            <div className="text-sm text-muted-foreground">Escribí una consulta para buscar.</div>
-          ) : !hasResults ? (
-            <div className="text-sm text-muted-foreground">Sin resultados para “{q}”.</div>
-          ) : (
-            <>
-              <div className="text-xs text-muted-foreground">{totalResults} resultado(s)</div>
+        <Card className="border-0" style={{ boxShadow: "none" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">
+              Resultados{q ? <span className="text-muted-foreground"> — “{q}”</span> : ""}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!query ? (
+              <div className="text-sm text-muted-foreground">Escribí una consulta para buscar.</div>
+            ) : !hasResults ? (
+              <div className="text-sm text-muted-foreground">Sin resultados para “{q}”.</div>
+            ) : (
+              <>
+                <div className="text-xs text-muted-foreground">{totalResults} resultado(s)</div>
 
               {matchedCases.length > 0 && (
                 <div className="space-y-2">
