@@ -1,6 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import PrintButton from "@/components/PrintButton";
 import { getClient, getClientCases, getClientFiles, getClientPersons } from "@/lib/clients-service";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ clientId: string }>;
+}): Promise<Metadata> {
+  const { clientId } = await params;
+  const c = await getClient(clientId);
+  const fullName = [c.first_name, c.last_name].filter(Boolean).join(" ") || c.id;
+  return {
+    title: `Export — ${fullName}`,
+  };
+}
 
 export default async function Page({
   params,
