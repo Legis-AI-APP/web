@@ -1,5 +1,6 @@
-import { getCase, getCaseFiles } from "@/lib/cases-service";
-import CasePage from "../CasePage";
+import Link from "next/link";
+import DraftEditor from "@/components/DraftEditor";
+import { getCase } from "@/lib/cases-service";
 
 export default async function Page({
   params,
@@ -7,7 +8,20 @@ export default async function Page({
   params: Promise<{ caseId: string }>;
 }) {
   const { caseId } = await params;
-  const [oldCase, files] = await Promise.all([getCase(caseId), getCaseFiles(caseId)]);
-  // MVP: drafts section lives in Panel for now; route exists for deep-linking.
-  return <CasePage oldCase={oldCase} files={files} initialPanelTab="notes" />;
+  const c = await getCase(caseId);
+
+  return (
+    <div className="space-y-3">
+      <div className="print-hide">
+        <Link href={`/cases/${caseId}/overview`} className="text-sm text-muted-foreground hover:underline">
+          ← Volver al caso
+        </Link>
+      </div>
+      <DraftEditor
+        title="Borradores — Caso"
+        subtitle={c.title}
+        storageKey={`draft:case:${caseId}`}
+      />
+    </div>
+  );
 }
