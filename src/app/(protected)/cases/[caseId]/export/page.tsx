@@ -1,7 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import PrintButton from "@/components/PrintButton";
 import { getCase, getCaseEvents, getCaseFiles } from "@/lib/cases-service";
 import { getClient } from "@/lib/clients-service";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ caseId: string }>;
+}): Promise<Metadata> {
+  const { caseId } = await params;
+  const c = await getCase(caseId);
+  return {
+    title: `Export — ${c.title}`,
+  };
+}
 
 export default async function Page({
   params,
