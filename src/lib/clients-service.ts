@@ -2,6 +2,7 @@
 
 import { LegisFile } from "./legis-file";
 import type { Case } from "./cases-service";
+import type { ClientPersonDto } from "./client-persons";
 import { apiUrl } from "./api";
 import { cookies } from "next/headers";
 
@@ -98,6 +99,19 @@ export const getClientCases = async (clientId: string) => {
   });
 
   return normalized as Case[];
+};
+
+export const getClientPersons = async (clientId: string) => {
+  const requestCookies = await cookies();
+  const token = requestCookies.get("session")?.value || "";
+  const response = await fetch(`${apiUrl}/api/clients/${clientId}/persons`, {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+  });
+  if (!response.ok) throw new Error(await response.json());
+  const json = (await response.json()) as ClientPersonDto[];
+  return json;
 };
 
 export async function uploadClientFile(clientId: string, file: File) {
