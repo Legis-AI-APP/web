@@ -3,12 +3,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createChat } from "@/lib/chats-service";
 import { SuggestionBar } from "@/components/SuggestionBar";
 import { motion, Variants } from "framer-motion";
 import ChatInput from "@/components/chat/ChatInput";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [message, setMessage] = useState("");
@@ -94,6 +96,30 @@ export default function Home() {
         {/* Sugerencias: UNA SOLA FILA, solo completas (con animaciones) */}
         <SuggestionBar items={suggestions} onPick={handleSuggestionClick} />
 
+        {/* Quick links */}
+        <motion.div
+          className="grid grid-cols-2 sm:grid-cols-3 gap-2"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18, duration: 0.35 }}
+        >
+          <Button asChild variant="outline" className="justify-start">
+            <Link href="/cases">Asuntos</Link>
+          </Button>
+          <Button asChild variant="outline" className="justify-start">
+            <Link href="/clients">Clientes</Link>
+          </Button>
+          <Button asChild variant="outline" className="justify-start">
+            <Link href="/documents">Documentos</Link>
+          </Button>
+          <Button asChild variant="outline" className="justify-start">
+            <Link href="/search">Buscar</Link>
+          </Button>
+          <Button asChild variant="outline" className="justify-start">
+            <Link href="/draft">Redactor</Link>
+          </Button>
+        </motion.div>
+
         {/* Nota breve */}
         <motion.p
           className="text-center text-xs text-muted-foreground"
@@ -101,8 +127,7 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25, duration: 0.35 }}
         >
-          Pegá un resumen o pedí que redacte un documento. También podés
-          adjuntar archivos en el chat.
+          Pegá un resumen o pedí que redacte un documento. También podés adjuntar archivos en el chat.
         </motion.p>
       </div>
     </div>
