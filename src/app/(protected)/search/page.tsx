@@ -59,14 +59,16 @@ export default async function SearchPage({
   const totalResults = matchedCases.length + matchedClients.length;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Buscar</h1>
-        <p className="text-sm text-muted-foreground">
-          MVP: busca dentro de tus <b>casos</b> y <b>clientes</b>. Normativa/jurisprudencia viene después,
+    <div className="-m-6 min-h-screen bg-background">
+      <div className="px-6 pt-6 pb-4 sm:px-8 sm:pt-8 sm:pb-4 max-w-7xl mx-auto">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Buscar</h1>
+        <p className="text-muted-foreground mt-1 text-lg">
+          Busca dentro de tus <b>casos</b> y <b>clientes</b>. Normativa/jurisprudencia viene después,
           con fuentes verificables.
         </p>
       </div>
+
+      <div className="px-6 pb-6 sm:px-8 sm:pb-8 max-w-3xl mx-auto space-y-4">
 
       <Card className="border-0" style={{ boxShadow: "none" }}>
         <CardHeader className="pb-2">
@@ -156,6 +158,7 @@ export default async function SearchPage({
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

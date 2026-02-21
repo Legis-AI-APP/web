@@ -86,16 +86,18 @@ export default function DraftEditor({
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold">{title}</h1>
-        <p className="text-sm text-muted-foreground">{subtitle}</p>
-        {canPersist && (
-          <p className="text-xs text-muted-foreground mt-1">
-            Guardado local automático (este dispositivo). Todavía no sincroniza.
-            {lastSavedAt ? ` Último guardado: ${new Date(lastSavedAt).toLocaleString()}` : ""}
-          </p>
-        )}
-      </div>
+      {title || subtitle ? (
+        <div>
+          {title ? <h1 className="text-2xl font-semibold">{title}</h1> : null}
+          {subtitle ? <p className="text-sm text-muted-foreground">{subtitle}</p> : null}
+          {canPersist && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Guardado local automático (este dispositivo). Todavía no sincroniza.
+              {lastSavedAt ? ` Último guardado: ${new Date(lastSavedAt).toLocaleString()}` : ""}
+            </p>
+          )}
+        </div>
+      ) : null}
 
       <Card className="border-0" style={{ boxShadow: "none" }}>
         <CardHeader className="pb-2">
