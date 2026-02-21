@@ -137,7 +137,7 @@ export default function DocumentsPage() {
     };
 
     return (
-        <div className="bg-background">
+        <div className="min-h-screen bg-background">
             {/* Header Section */}
             <motion.div
                 className="bg-background"
