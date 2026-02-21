@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCase, getCaseFiles } from "@/lib/cases-service";
+import { getCase, getCaseEvents, getCaseFiles } from "@/lib/cases-service";
 
 export default async function Page({
   params,
@@ -7,7 +7,11 @@ export default async function Page({
   params: Promise<{ caseId: string }>;
 }) {
   const { caseId } = await params;
-  const [c, files] = await Promise.all([getCase(caseId), getCaseFiles(caseId)]);
+  const [c, files, events] = await Promise.all([
+    getCase(caseId),
+    getCaseFiles(caseId),
+    getCaseEvents(caseId),
+  ]);
 
   return (
     <div className="print-page max-w-3xl mx-auto space-y-6">
@@ -68,6 +72,31 @@ export default async function Page({
               <li key={f.url || f.name} className="rounded-standard border border-border p-3">
                 <div className="text-sm font-medium">{f.name}</div>
                 <div className="text-xs text-muted-foreground break-all">{f.url}</div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-sm font-semibold">Actividad ({events.length})</h2>
+        {events.length === 0 ? (
+          <div className="text-sm text-muted-foreground">Sin actividad registrada.</div>
+        ) : (
+          <ul className="space-y-2">
+            {events.map((e) => (
+              <li key={e.id} className="rounded-standard border border-border p-3">
+                <div className="text-sm font-medium">{e.title}</div>
+                {e.created_at && (
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(e.created_at).toLocaleString()}
+                  </div>
+                )}
+                {e.description && (
+                  <div className="text-sm text-muted-foreground whitespace-pre-wrap mt-2">
+                    {e.description}
+                  </div>
+                )}
               </li>
             ))}
           </ul>
