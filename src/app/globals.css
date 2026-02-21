@@ -151,6 +151,15 @@
     text-decoration: none !important;
   }
 
+  /* Avoid awkward splits in cards/lists */
+  li,
+  section,
+  header,
+  footer {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
   .print-page {
     padding: 0;
     max-width: none !important;
