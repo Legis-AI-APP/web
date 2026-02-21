@@ -21,6 +21,7 @@ type DraftTemplate = {
   id: string;
   name: string;
   systemInstruction: string;
+  templateText: string;
 };
 
 const DEFAULT_TEMPLATES: DraftTemplate[] = [
@@ -28,19 +29,77 @@ const DEFAULT_TEMPLATES: DraftTemplate[] = [
     id: "escrito-generico",
     name: "Escrito genérico",
     systemInstruction:
-      "Redactá un escrito jurídico en español (Argentina). Tono profesional, claro y sobrio. Usá placeholders cuando falte información. Incluí estructura: Objeto, Hechos, Derecho, Petitorio.",
+      "Redactá un escrito jurídico en español (Argentina). Tono profesional, claro y sobrio. No inventes hechos ni normas. Si falta info, dejá placeholders.",
+    templateText: [
+      "ESCRITO — {{doc.type}}",
+      "",
+      "JURISDICCIÓN/FUERO: {{doc.jurisdiction}}",
+      "",
+      "CLIENTE: {{client.name}} ({{client.document}})",
+      "EMAIL/TEL: {{client.email}} / {{client.phone}}",
+      "DOMICILIO: {{client.address}}",
+      "",
+      "CASO/ASUNTO: {{case.title}}",
+      "ESTADO: {{case.status}}",
+      "DESCRIPCIÓN: {{case.description}}",
+      "",
+      "1) Objeto",
+      "{{doc.goal}}",
+      "",
+      "2) Hechos",
+      "{{doc.facts}}",
+      "",
+      "3) Derecho",
+      "(completar normas aplicables; no inventar)",
+      "",
+      "4) Petitorio",
+      "(completar)",
+    ].join("\n"),
   },
   {
     id: "carta-documento",
     name: "Carta documento (borrador)",
     systemInstruction:
-      "Redactá un borrador de carta documento (Argentina). Sé conciso, preciso y formal. Incluí fecha/lugar como placeholders si faltan.",
+      "Redactá un borrador de carta documento (Argentina). Sé conciso, preciso y formal. No inventes hechos; usá placeholders.",
+    templateText: [
+      "CARTA DOCUMENTO — BORRADOR",
+      "",
+      "FECHA/LUGAR: {{doc.datePlace}}",
+      "",
+      "REMITENTE: {{client.name}} ({{client.document}})",
+      "DOMICILIO: {{client.address}}",
+      "",
+      "DESTINATARIO: {{doc.recipient}}",
+      "DOMICILIO: {{doc.recipientAddress}}",
+      "",
+      "TEXTO:",
+      "{{doc.body}}",
+    ].join("\n"),
   },
   {
     id: "email-cliente",
     name: "Email al cliente",
     systemInstruction:
-      "Redactá un email profesional al cliente (Argentina). Claro, con lista de pendientes y próximos pasos.",
+      "Redactá un email profesional al cliente (Argentina). Claro, con lista de pendientes y próximos pasos. No inventes datos.",
+    templateText: [
+      "ASUNTO: {{doc.subject}}",
+      "",
+      "Hola {{client.name}},",
+      "",
+      "Te escribo por el asunto: {{case.title}}.",
+      "",
+      "Resumen:",
+      "{{doc.summary}}",
+      "",
+      "Pendientes / lo que necesito de vos:",
+      "{{doc.pending}}",
+      "",
+      "Próximos pasos:",
+      "{{doc.nextSteps}}",
+      "",
+      "Saludos,",
+      "{{doc.signature}}",
+    ].join("\n"),
   },
 ];
 
@@ -48,7 +107,7 @@ export default function DraftEditor({
   title = "Redactor",
   subtitle = "MVP: plantilla + generación asistida (la IA integrada viene en el siguiente paso).",
   storageKey,
-  contextText,
+  context,
   askEndpoint,
   createChatPath,
   templates = DEFAULT_TEMPLATES,
@@ -56,7 +115,21 @@ export default function DraftEditor({
   title?: string;
   subtitle?: string;
   storageKey?: string;
-  contextText?: string;
+  context?: {
+    client?: {
+      name?: string;
+      document?: string;
+      documentType?: string;
+      email?: string;
+      phone?: string;
+      address?: string;
+    };
+    case?: {
+      title?: string;
+      status?: string;
+      description?: string;
+    };
+  };
   askEndpoint?: string;
   createChatPath?: string;
   templates?: DraftTemplate[];
@@ -149,6 +222,52 @@ export default function DraftEditor({
     [aiChatId, createChatPath]
   );
 
+  const placeholderMap = useMemo(() => {
+    const clientName = context?.client?.name ?? "{{client.name}}";
+    const clientDoc =
+      [context?.client?.documentType, context?.client?.document].filter(Boolean).join(" ") ||
+      "{{client.document}}";
+
+    return {
+      "{{client.name}}": clientName,
+      "{{client.document}}": clientDoc,
+      "{{client.email}}": context?.client?.email ?? "{{client.email}}",
+      "{{client.phone}}": context?.client?.phone ?? "{{client.phone}}",
+      "{{client.address}}": context?.client?.address ?? "{{client.address}}",
+
+      "{{case.title}}": context?.case?.title ?? "{{case.title}}",
+      "{{case.status}}": context?.case?.status ?? "{{case.status}}",
+      "{{case.description}}": context?.case?.description ?? "{{case.description}}",
+
+      "{{doc.type}}": docType || "{{doc.type}}",
+      "{{doc.jurisdiction}}": jurisdiction || "{{doc.jurisdiction}}",
+      "{{doc.goal}}": goal || "{{doc.goal}}",
+      "{{doc.facts}}": facts || "{{doc.facts}}",
+
+      // Optional placeholders for specific templates
+      "{{doc.datePlace}}": "{{doc.datePlace}}",
+      "{{doc.recipient}}": "{{doc.recipient}}",
+      "{{doc.recipientAddress}}": "{{doc.recipientAddress}}",
+      "{{doc.body}}": "{{doc.body}}",
+      "{{doc.subject}}": "{{doc.subject}}",
+      "{{doc.summary}}": "{{doc.summary}}",
+      "{{doc.pending}}": "{{doc.pending}}",
+      "{{doc.nextSteps}}": "{{doc.nextSteps}}",
+      "{{doc.signature}}": "{{doc.signature}}",
+    } as const;
+  }, [context, docType, facts, goal, jurisdiction]);
+
+  const renderTemplate = useMemo(
+    () => (text: string) => {
+      let out = text;
+      for (const [k, v] of Object.entries(placeholderMap)) {
+        out = out.split(k).join(v);
+      }
+      return out;
+    },
+    [placeholderMap]
+  );
+
   const generateWithAi = useMemo(
     () => async () => {
       if (!askEndpoint) return;
@@ -161,6 +280,8 @@ export default function DraftEditor({
       try {
         const chatId = await ensureAiChat();
 
+        const seeded = renderTemplate(selectedTemplate.templateText);
+
         const prompt = [
           "Sos un asistente legal para abogados en Argentina.",
           "IMPORTANTE: no inventes hechos ni normas; usá placeholders si faltan datos.",
@@ -168,16 +289,16 @@ export default function DraftEditor({
           `TEMPLATE: ${selectedTemplate.name}`,
           selectedTemplate.systemInstruction,
           "",
-          contextText ? `CONTEXTO:\n${contextText}` : null,
-          docType ? `TIPO DE ESCRITO: ${docType}` : null,
-          jurisdiction ? `JURISDICCIÓN/FUERO: ${jurisdiction}` : null,
-          goal ? `OBJETIVO/PRETENSIÓN:\n${goal}` : null,
-          facts ? `HECHOS RELEVANTES:\n${facts}` : null,
+          "PLANTILLA (con placeholders a completar):",
+          seeded,
+          "",
+          "Tareas:",
+          "1) Completá la plantilla con el mejor texto posible usando la info disponible.",
+          "2) Si falta información, dejá placeholders claros (no inventes).",
+          "3) Mantené formato y títulos.",
           "",
           "Entregá SOLO el borrador final (sin preámbulos).",
-        ]
-          .filter((x): x is string => Boolean(x))
-          .join("\n");
+        ].join("\n");
 
         setResult("");
         await askGeminiStream(
@@ -194,7 +315,7 @@ export default function DraftEditor({
         setAiLoading(false);
       }
     },
-    [askEndpoint, contextText, docType, ensureAiChat, facts, goal, jurisdiction, selectedTemplate]
+    [askEndpoint, ensureAiChat, renderTemplate, selectedTemplate]
   );
 
   return (
