@@ -32,6 +32,7 @@ export type ScopedChatWorkspaceProps = {
   scopeBasePath: string; // e.g. /cases/:id or /clients/:id
   headerTitle: string;
   headerSubtitle: string;
+  contextLabel?: string; // e.g. "Documentos" | "Actividad" etc.
   listChatsPath: string; // e.g. /api/cases/:id/chats
   createChatPath: string; // e.g. /api/cases/:id/chats
   askPath: string; // e.g. /api/ai/ask/case/:id
@@ -43,6 +44,7 @@ export default function ScopedChatWorkspace({
   scopeBasePath,
   headerTitle,
   headerSubtitle,
+  contextLabel,
   listChatsPath,
   createChatPath,
   askPath,
@@ -89,16 +91,18 @@ export default function ScopedChatWorkspace({
   const suggestions = useMemo(() => {
     if (scopeLabel === "Asunto") {
       return [
-        "¿Qué próximos pasos sugerís?",
-        "Resumime los hechos clave del caso",
-        "¿Qué documentos faltan?",
+        "Resumime el caso (hechos, estado, riesgos)",
+        "Checklist de próximos pasos",
+        "Proponé estrategia (hipótesis, fortalezas, riesgos)",
+        "Generá un borrador de escrito (con placeholders)",
       ];
     }
 
     return [
-      "Resumime el estado del cliente",
+      "Resumime el cliente (estado y pendientes)",
       "¿Qué documentos faltan?",
-      "Armá un checklist de diligencias",
+      "Checklist de diligencias",
+      "Generá un borrador de nota/carta (con placeholders)",
     ];
   }, [scopeLabel]);
 
@@ -328,28 +332,35 @@ export default function ScopedChatWorkspace({
       </div>
 
       <div className="flex-1 min-h-0 overflow-hidden">
+        {/* Quick actions bar */}
+        <div className="px-4 py-2 border-b bg-background/60">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-xs text-muted-foreground truncate">
+              Contexto: {contextLabel ? contextLabel : scopeLabel}
+            </div>
+            <div className="flex gap-2 overflow-x-auto whitespace-nowrap">
+              {suggestions.map((s) => (
+                <Button
+                  key={s}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={submitting || loadingHistory}
+                  onClick={() => void handleSend(s)}
+                >
+                  {s}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <Conversation className="h-full overflow-hidden">
           <ConversationContent>
             {loadingHistory ? (
               <ConversationEmptyState title="Cargando…" description="Trayendo historial del chat" />
             ) : messages.length === 0 ? (
-              <div className="space-y-4">
-                <ConversationEmptyState title="Arrancamos" description={suggestions[0]} />
-                <div className="flex flex-wrap gap-2">
-                  {suggestions.map((s) => (
-                    <Button
-                      key={s}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={submitting}
-                      onClick={() => void handleSend(s)}
-                    >
-                      {s}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+              <ConversationEmptyState title="Arrancamos" description={suggestions[0]} />
             ) : (
               messages.map((m) => (
                 <Message key={m.id} from={m.role}>
