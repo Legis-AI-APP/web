@@ -9,11 +9,13 @@ import EntitySubnav from "@/components/EntitySubnav";
 
 export default function CasePage({
   oldCase,
+  clientName,
   files: _files,
   initialPanelTab,
   contextLabel,
 }: {
   oldCase: Case;
+  clientName?: string;
   files: LegisFile[];
   initialPanelTab?: "movements" | "documents" | "dates" | "notes";
   contextLabel?: string;
@@ -23,7 +25,7 @@ export default function CasePage({
   const caseData = {
     id: oldCase.id,
     title: oldCase.title,
-    clientName: oldCase.client_id ? `Cliente (${oldCase.client_id})` : "Cliente",
+    clientName: clientName ?? (oldCase.client_id ? `Cliente (${oldCase.client_id})` : "Cliente"),
     status: oldCase.status,
     partyA: "",
     partyB: "",

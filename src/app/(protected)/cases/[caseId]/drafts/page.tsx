@@ -1,6 +1,7 @@
 import Link from "next/link";
 import DraftEditor from "@/components/DraftEditor";
 import { getCase } from "@/lib/cases-service";
+import { getClient } from "@/lib/clients-service";
 
 export default async function Page({
   params,
@@ -9,6 +10,8 @@ export default async function Page({
 }) {
   const { caseId } = await params;
   const c = await getCase(caseId);
+
+  const client = c.client_id ? await getClient(c.client_id).catch(() => null) : null;
 
   return (
     <div className="space-y-3">
@@ -22,6 +25,16 @@ export default async function Page({
         subtitle={c.title}
         storageKey={`draft:case:${caseId}`}
         context={{
+          client: client
+            ? {
+                name: [client.first_name, client.last_name].filter(Boolean).join(" ") || client.id,
+                documentType: client.document_type,
+                document: client.document,
+                email: client.email,
+                phone: client.phone,
+                address: client.address,
+              }
+            : undefined,
           case: {
             title: c.title,
             status: c.status,
