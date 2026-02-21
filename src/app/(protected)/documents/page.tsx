@@ -3,9 +3,14 @@ import { getCases, getCaseFiles } from "@/lib/cases-service";
 import { getClients, getClientFiles } from "@/lib/clients-service";
 
 export default async function Page() {
-  const [cases, clients] = await Promise.all([getCases(), getClients()]);
+  const [casesAll, clientsAll] = await Promise.all([getCases(), getClients()]);
 
-  // MVP approach: aggregate all files.
+  // MVP safeguard: cap fan-out to avoid N+1 explosion on large accounts.
+  // (Later: server endpoint to search documents without fetching everything.)
+  const MAX_OWNERS = 50;
+  const cases = casesAll.slice(0, MAX_OWNERS);
+  const clients = clientsAll.slice(0, MAX_OWNERS);
+
   const [caseFiles, clientFiles] = await Promise.all([
     Promise.all(
       cases.map(async (c) => ({
@@ -23,5 +28,14 @@ export default async function Page() {
 
   const docs = buildDocsIndex({ cases, clients, caseFiles, clientFiles });
 
-  return <DocumentsPage docs={docs} />;
+  return (
+    <DocumentsPage
+      docs={docs}
+      note={
+        casesAll.length > MAX_OWNERS || clientsAll.length > MAX_OWNERS
+          ? `MVP: mostrando archivos de los primeros ${MAX_OWNERS} casos/clientes para performance.`
+          : undefined
+      }
+    />
+  );
 }

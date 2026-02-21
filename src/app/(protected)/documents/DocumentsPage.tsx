@@ -34,8 +34,10 @@ const fadeInUp: Variants = {
 
 export default function DocumentsPage({
   docs,
+  note,
 }: {
   docs: DocRow[];
+  note?: string;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [kindFilter, setKindFilter] = useState<"all" | "case" | "client">("all");
@@ -70,6 +72,7 @@ export default function DocumentsPage({
             </div>
             <div className="text-sm text-muted-foreground">
               {docs.length} archivo(s)
+              {note ? <div className="text-xs mt-1">{note}</div> : null}
             </div>
           </div>
         </div>
