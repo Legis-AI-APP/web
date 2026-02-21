@@ -106,6 +106,26 @@ export default async function Page({
                     {e.description}
                   </div>
                 )}
+
+                {e.file_urls?.length ? (
+                  <div className="mt-2 space-y-1">
+                    <div className="text-xs font-medium text-muted-foreground">Adjuntos</div>
+                    <ul className="space-y-1">
+                      {e.file_urls.map((u) => (
+                        <li key={u} className="text-xs text-muted-foreground break-all">
+                          <a
+                            href={u}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="hover:underline"
+                          >
+                            {u}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
               </li>
             ))}
           </ul>
