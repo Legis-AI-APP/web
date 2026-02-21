@@ -9,11 +9,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { askGeminiStream } from "@/lib/ask-gemini-stream";
 
 type StoredDraft = {
+  templateId?: string;
   type?: string;
   jurisdiction?: string;
+
+  // common content
   facts: string;
   goal: string;
   result: string;
+
+  // template-specific doc fields
+  docDatePlace?: string;
+  docRecipient?: string;
+  docRecipientAddress?: string;
+  docBody?: string;
+  docSubject?: string;
+  docSummary?: string;
+  docPending?: string;
+  docNextSteps?: string;
+  docSignature?: string;
+
   updatedAt: string;
 };
 
@@ -166,11 +181,23 @@ export default function DraftEditor({
       if (!raw) return;
       try {
         const parsed = JSON.parse(raw) as StoredDraft;
+        if (parsed.templateId) setTemplateId(parsed.templateId);
         setDocType(parsed.type ?? "");
         setJurisdiction(parsed.jurisdiction ?? "");
         setFacts(parsed.facts ?? "");
         setGoal(parsed.goal ?? "");
         setResult(parsed.result ?? "");
+
+        setDocDatePlace(parsed.docDatePlace ?? "");
+        setDocRecipient(parsed.docRecipient ?? "");
+        setDocRecipientAddress(parsed.docRecipientAddress ?? "");
+        setDocBody(parsed.docBody ?? "");
+        setDocSubject(parsed.docSubject ?? "");
+        setDocSummary(parsed.docSummary ?? "");
+        setDocPending(parsed.docPending ?? "");
+        setDocNextSteps(parsed.docNextSteps ?? "");
+        setDocSignature(parsed.docSignature ?? "");
+
         setLastSavedAt(parsed.updatedAt ?? null);
       } catch {
         // ignore
@@ -184,17 +211,44 @@ export default function DraftEditor({
       if (!storageKey) return;
       const updatedAt = new Date().toISOString();
       const payload: StoredDraft = {
+        templateId,
         type: docType,
         jurisdiction,
         facts,
         goal,
         result,
+        docDatePlace,
+        docRecipient,
+        docRecipientAddress,
+        docBody,
+        docSubject,
+        docSummary,
+        docPending,
+        docNextSteps,
+        docSignature,
         updatedAt,
       };
       localStorage.setItem(storageKey, JSON.stringify(payload));
       setLastSavedAt(updatedAt);
     },
-    [docType, facts, goal, jurisdiction, result, storageKey]
+    [
+      docBody,
+      docDatePlace,
+      docNextSteps,
+      docPending,
+      docRecipient,
+      docRecipientAddress,
+      docSignature,
+      docSubject,
+      docSummary,
+      docType,
+      facts,
+      goal,
+      jurisdiction,
+      result,
+      storageKey,
+      templateId,
+    ]
   );
 
   useEffect(() => {
@@ -207,7 +261,25 @@ export default function DraftEditor({
       save();
     }, 500);
     return () => window.clearTimeout(id);
-  }, [docType, facts, goal, jurisdiction, result, save, storageKey]);
+  }, [
+    docBody,
+    docDatePlace,
+    docNextSteps,
+    docPending,
+    docRecipient,
+    docRecipientAddress,
+    docSignature,
+    docSubject,
+    docSummary,
+    docType,
+    facts,
+    goal,
+    jurisdiction,
+    result,
+    save,
+    storageKey,
+    templateId,
+  ]);
 
   const selectedTemplate = useMemo(
     () => templates.find((t) => t.id === templateId) ?? templates[0] ?? null,
