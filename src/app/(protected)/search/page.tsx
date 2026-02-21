@@ -72,7 +72,7 @@ export default async function SearchPage({
         <CardHeader className="pb-2">
           <CardTitle className="text-sm">Consulta</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-2">
           <form className="flex gap-2" action="/search" method="GET">
             <Input
               name="q"
@@ -88,6 +88,7 @@ export default async function SearchPage({
               </Button>
             ) : null}
           </form>
+          <div className="text-xs text-muted-foreground">Tip: podés apretar Enter para buscar.</div>
         </CardContent>
       </Card>
 
