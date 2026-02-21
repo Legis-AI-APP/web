@@ -71,7 +71,7 @@ export default function DocumentsPage({
               </p>
             </div>
             <div className="text-sm text-muted-foreground">
-              {docs.length} archivo(s)
+              {filtered.length} / {docs.length} archivo(s)
               {note ? <div className="text-xs mt-1">{note}</div> : null}
             </div>
           </div>
@@ -98,6 +98,14 @@ export default function DocumentsPage({
               autoFocus
             />
           </div>
+
+          {searchTerm ? (
+            <div>
+              <Button type="button" variant="outline" size="sm" onClick={() => setSearchTerm("")}> 
+                Limpiar búsqueda
+              </Button>
+            </div>
+          ) : null}
 
           <div className="flex flex-wrap gap-2">
             <Button
