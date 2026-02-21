@@ -167,6 +167,39 @@ export default function DraftEditor({
             >
               Copiar
             </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              disabled={result.trim().length === 0}
+              onClick={() => {
+                try {
+                  const stamp = new Date().toISOString().slice(0, 10);
+                  const base = (docType || title || "borrador")
+                    .toLowerCase()
+                    .replace(/[^a-z0-9\- _]/g, "")
+                    .trim()
+                    .replace(/\s+/g, "-")
+                    .slice(0, 48);
+
+                  const filename = `${base || "borrador"}-${stamp}.txt`;
+                  const blob = new Blob([result], { type: "text/plain;charset=utf-8" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = filename;
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  URL.revokeObjectURL(url);
+                  toast.success("Descarga iniciada");
+                } catch {
+                  toast.error("No se pudo descargar");
+                }
+              }}
+            >
+              Descargar .txt
+            </Button>
             {canPersist && (
               <>
                 <Button type="button" variant="outline" onClick={save}>
