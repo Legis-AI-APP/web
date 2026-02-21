@@ -11,6 +11,7 @@ import type { LegisFile } from "@/lib/legis-file";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/EmptyState";
 
 type DocRow = {
@@ -37,17 +38,18 @@ export default function DocumentsPage({
   docs: DocRow[];
 }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [kindFilter, setKindFilter] = useState<"all" | "case" | "client">("all");
 
   const filtered = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
-    if (!q) return docs;
+
     return docs.filter((d) => {
-      return (
-        d.name.toLowerCase().includes(q) ||
-        d.ownerLabel.toLowerCase().includes(q)
-      );
+      if (kindFilter !== "all" && d.kind !== kindFilter) return false;
+      if (!q) return true;
+
+      return d.name.toLowerCase().includes(q) || d.ownerLabel.toLowerCase().includes(q);
     });
-  }, [docs, searchTerm]);
+  }, [docs, kindFilter, searchTerm]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -75,9 +77,9 @@ export default function DocumentsPage({
 
       {/* Content */}
       <div className="px-6 pb-6 sm:px-8 sm:pb-8 max-w-7xl mx-auto space-y-6">
-        {/* Search */}
+        {/* Search + Filters */}
         <motion.div
-          className="max-w-lg"
+          className="max-w-2xl space-y-3"
           initial="hidden"
           animate="visible"
           variants={fadeInUp}
@@ -92,6 +94,33 @@ export default function DocumentsPage({
               className="pl-12 h-12 text-base border-2 focus:border-primary/50 transition-colors"
               autoFocus
             />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant={kindFilter === "all" ? "default" : "outline"}
+              onClick={() => setKindFilter("all")}
+            >
+              Todos
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={kindFilter === "case" ? "default" : "outline"}
+              onClick={() => setKindFilter("case")}
+            >
+              Casos
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={kindFilter === "client" ? "default" : "outline"}
+              onClick={() => setKindFilter("client")}
+            >
+              Clientes
+            </Button>
           </div>
         </motion.div>
 
