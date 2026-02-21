@@ -23,6 +23,9 @@ export default async function Page({
         title="Borradores — Cliente"
         subtitle={fullName}
         storageKey={`draft:client:${clientId}`}
+        contextText={`Cliente: ${fullName}\nEmail: ${client.email || "—"}\nDocumento: ${[client.document_type, client.document].filter(Boolean).join(" ") || "—"}`}
+        askEndpoint={`/api/ai/ask/client/${clientId}`}
+        createChatPath={`/api/clients/${clientId}/chats`}
       />
     </div>
   );

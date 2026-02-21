@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { askGeminiStream } from "@/lib/ask-gemini-stream";
 
 type StoredDraft = {
   type?: string;
@@ -16,14 +17,49 @@ type StoredDraft = {
   updatedAt: string;
 };
 
+type DraftTemplate = {
+  id: string;
+  name: string;
+  systemInstruction: string;
+};
+
+const DEFAULT_TEMPLATES: DraftTemplate[] = [
+  {
+    id: "escrito-generico",
+    name: "Escrito genérico",
+    systemInstruction:
+      "Redactá un escrito jurídico en español (Argentina). Tono profesional, claro y sobrio. Usá placeholders cuando falte información. Incluí estructura: Objeto, Hechos, Derecho, Petitorio.",
+  },
+  {
+    id: "carta-documento",
+    name: "Carta documento (borrador)",
+    systemInstruction:
+      "Redactá un borrador de carta documento (Argentina). Sé conciso, preciso y formal. Incluí fecha/lugar como placeholders si faltan.",
+  },
+  {
+    id: "email-cliente",
+    name: "Email al cliente",
+    systemInstruction:
+      "Redactá un email profesional al cliente (Argentina). Claro, con lista de pendientes y próximos pasos.",
+  },
+];
+
 export default function DraftEditor({
   title = "Redactor",
   subtitle = "MVP: plantilla + generación asistida (la IA integrada viene en el siguiente paso).",
   storageKey,
+  contextText,
+  askEndpoint,
+  createChatPath,
+  templates = DEFAULT_TEMPLATES,
 }: {
   title?: string;
   subtitle?: string;
   storageKey?: string;
+  contextText?: string;
+  askEndpoint?: string;
+  createChatPath?: string;
+  templates?: DraftTemplate[];
 }) {
   const [docType, setDocType] = useState("");
   const [jurisdiction, setJurisdiction] = useState("");
@@ -31,6 +67,10 @@ export default function DraftEditor({
   const [goal, setGoal] = useState("");
   const [result, setResult] = useState("");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+
+  const [templateId, setTemplateId] = useState<string>(templates[0]?.id ?? "");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiChatId, setAiChatId] = useState<string | null>(null);
 
   const canPersist = Boolean(storageKey);
 
@@ -84,6 +124,79 @@ export default function DraftEditor({
     return () => window.clearTimeout(id);
   }, [docType, facts, goal, jurisdiction, result, save, storageKey]);
 
+  const selectedTemplate = useMemo(
+    () => templates.find((t) => t.id === templateId) ?? templates[0] ?? null,
+    [templateId, templates]
+  );
+
+  const canUseAi = Boolean(askEndpoint);
+
+  const ensureAiChat = useMemo(
+    () => async (): Promise<string | null> => {
+      if (aiChatId) return aiChatId;
+      if (!createChatPath) return null;
+
+      const res = await fetch(createChatPath, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("No se pudo crear el chat para IA");
+      const json = (await res.json()) as { chat_id: string };
+      setAiChatId(json.chat_id);
+      return json.chat_id;
+    },
+    [aiChatId, createChatPath]
+  );
+
+  const generateWithAi = useMemo(
+    () => async () => {
+      if (!askEndpoint) return;
+      if (!selectedTemplate) {
+        toast.error("Elegí un template");
+        return;
+      }
+
+      setAiLoading(true);
+      try {
+        const chatId = await ensureAiChat();
+
+        const prompt = [
+          "Sos un asistente legal para abogados en Argentina.",
+          "IMPORTANTE: no inventes hechos ni normas; usá placeholders si faltan datos.",
+          "",
+          `TEMPLATE: ${selectedTemplate.name}`,
+          selectedTemplate.systemInstruction,
+          "",
+          contextText ? `CONTEXTO:\n${contextText}` : null,
+          docType ? `TIPO DE ESCRITO: ${docType}` : null,
+          jurisdiction ? `JURISDICCIÓN/FUERO: ${jurisdiction}` : null,
+          goal ? `OBJETIVO/PRETENSIÓN:\n${goal}` : null,
+          facts ? `HECHOS RELEVANTES:\n${facts}` : null,
+          "",
+          "Entregá SOLO el borrador final (sin preámbulos).",
+        ]
+          .filter((x): x is string => Boolean(x))
+          .join("\n");
+
+        setResult("");
+        await askGeminiStream(
+          prompt,
+          (chunk) => {
+            setResult((prev) => prev + chunk);
+          },
+          chatId ?? undefined,
+          askEndpoint
+        );
+      } catch (e: unknown) {
+        toast.error(e instanceof Error ? e.message : "No se pudo generar con IA");
+      } finally {
+        setAiLoading(false);
+      }
+    },
+    [askEndpoint, contextText, docType, ensureAiChat, facts, goal, jurisdiction, selectedTemplate]
+  );
+
   return (
     <div className="max-w-3xl mx-auto space-y-4">
       {title || subtitle ? (
@@ -104,6 +217,22 @@ export default function DraftEditor({
           <CardTitle className="text-sm">Parámetros</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          {templates.length > 0 ? (
+            <label className="block">
+              <div className="text-xs font-medium text-muted-foreground mb-1">Template</div>
+              <select
+                className="w-full h-10 rounded-standard border border-border bg-background px-3 text-sm"
+                value={templateId}
+                onChange={(e) => setTemplateId(e.currentTarget.value)}
+              >
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
           <Input
             placeholder="Tipo de escrito (demanda, contestación, apelación…)"
             value={docType}
@@ -154,8 +283,14 @@ export default function DraftEditor({
                 setResult(draft);
               }}
             >
-              Generar borrador
+              Generar (manual)
             </Button>
+
+            {canUseAi ? (
+              <Button type="button" disabled={aiLoading} onClick={() => void generateWithAi()}>
+                {aiLoading ? "Generando…" : "Generar con IA"}
+              </Button>
+            ) : null}
             <Button type="button" variant="outline" onClick={() => setResult("")}> 
               Limpiar
             </Button>

@@ -21,6 +21,9 @@ export default async function Page({
         title="Borradores — Caso"
         subtitle={c.title}
         storageKey={`draft:case:${caseId}`}
+        contextText={`Caso: ${c.title}\nEstado: ${c.status}\nDescripción: ${c.description || "(sin descripción)"}`}
+        askEndpoint={`/api/ai/ask/case/${caseId}`}
+        createChatPath={`/api/cases/${caseId}/chats`}
       />
     </div>
   );
