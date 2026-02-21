@@ -23,74 +23,49 @@ export default function CasesPage({
 }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "final">("all");
 
-  const filteredCases = useMemo(() => {
-    if (!searchTerm.trim()) return cases;
+  const clientNameForCase = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of clients) map.set(c.id, `${c.first_name} ${c.last_name}`.trim());
+    return (case_: Case) => map.get(case_.client_id) || "Cliente";
+  }, [clients]);
 
-    return cases.filter(case_ =>
-      case_.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      case_.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      getMockCaseData(case_, clients).client.toLowerCase().includes(searchTerm.toLowerCase())
+  const isFinalStatus = (statusRaw: string | null | undefined) => {
+    const s = (statusRaw ?? "").toLowerCase();
+    return (
+      s.includes("final") ||
+      s.includes("cerr") ||
+      s.includes("closed") ||
+      s.includes("done") ||
+      s.includes("complet")
     );
-  }, [cases, clients, searchTerm]);
-
-  // Mock data for fields that aren't in the current Case interface
-  const getMockCaseData = (case_: Case, clients: Client[]) => {
-    const client = clients.find(c => c.id === case_.client_id);
-    const clientName = client ? `${client.first_name} ${client.last_name}` : 'Cliente no encontrado';
-
-    // Generate mock data based on existing case data
-    const statuses = ['En Progreso', 'Pendiente', 'Completado'];
-    const specialties = ['Familia', 'Laboral', 'Comercial', 'Penal', 'Civil'];
-    const mockStatus = statuses[Math.abs(case_.id.charCodeAt(0)) % statuses.length];
-    const mockSpecialty = specialties[Math.abs(case_.id.charCodeAt(1)) % specialties.length];
-
-    // Generate dates based on created_at with fallback to current date
-    let startDate: Date;
-    try {
-      startDate = case_.created_at ? new Date(case_.created_at) : new Date();
-      if (isNaN(startDate.getTime())) {
-        startDate = new Date();
-      }
-    } catch {
-      startDate = new Date();
-    }
-
-    const nextHearing = new Date(startDate);
-    nextHearing.setDate(startDate.getDate() + 30);
-
-    let endDate: string | undefined;
-    if (mockStatus === 'Completado') {
-      try {
-        const endDateObj = new Date(startDate.getTime() + 60 * 24 * 60 * 60 * 1000);
-        endDate = endDateObj.toISOString().split('T')[0];
-      } catch {
-        endDate = undefined;
-      }
-    }
-
-    return {
-      ...case_,
-      client: clientName,
-      status: mockStatus,
-      specialty: mockSpecialty,
-      startDate: startDate.toISOString().split('T')[0],
-      nextHearing: nextHearing.toISOString().split('T')[0],
-      endDate
-    };
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'En Progreso':
-        return 'bg-blue-100 text-blue-800';
-      case 'Completado':
-        return 'bg-green-100 text-green-800';
-      case 'Pendiente':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+  const filteredCases = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+
+    return cases.filter((case_) => {
+      if (statusFilter === "active" && isFinalStatus(case_.status)) return false;
+      if (statusFilter === "final" && !isFinalStatus(case_.status)) return false;
+
+      if (!term) return true;
+
+      const clientName = clientNameForCase(case_).toLowerCase();
+      return (
+        case_.title.toLowerCase().includes(term) ||
+        case_.description.toLowerCase().includes(term) ||
+        clientName.includes(term)
+      );
+    });
+  }, [cases, clientNameForCase, searchTerm, statusFilter]);
+
+  const getStatusColor = (statusRaw: string) => {
+    const s = (statusRaw || "").toLowerCase();
+    if (isFinalStatus(statusRaw)) return "bg-green-100 text-green-800";
+    if (s.includes("pend")) return "bg-yellow-100 text-yellow-800";
+    if (s.includes("prog") || s.includes("open") || s.includes("activ")) return "bg-blue-100 text-blue-800";
+    return "bg-gray-100 text-gray-800";
   };
 
 
@@ -161,9 +136,9 @@ export default function CasesPage({
 
       {/* Main Content */}
       <div className="px-6 pb-6 sm:px-8 sm:pb-8 max-w-7xl mx-auto space-y-6">
-        {/* Search Section */}
+        {/* Search + Filters */}
         <motion.div
-          className="max-w-lg"
+          className="max-w-2xl space-y-3"
           initial="hidden"
           animate="visible"
           variants={fadeInUp}
@@ -172,11 +147,38 @@ export default function CasesPage({
           <div className="relative bg-sidebar rounded-lg">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
             <Input
-              placeholder="Buscar asuntos por nombre, cliente o especialidad..."
+              placeholder="Buscar asuntos por nombre o cliente..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-12 h-12 text-base border-2 focus:border-primary/50 transition-colors"
             />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant={statusFilter === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setStatusFilter("all")}
+            >
+              Todos
+            </Button>
+            <Button
+              type="button"
+              variant={statusFilter === "active" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setStatusFilter("active")}
+            >
+              Activos
+            </Button>
+            <Button
+              type="button"
+              variant={statusFilter === "final" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setStatusFilter("final")}
+            >
+              Finalizados
+            </Button>
           </div>
         </motion.div>
 
@@ -190,7 +192,7 @@ export default function CasesPage({
             animate="visible"
           >
             {filteredCases.map((case_) => {
-              const mockCase = getMockCaseData(case_, clients);
+              const clientName = clientNameForCase(case_);
               return (
                 <motion.div
                   key={case_.id}
@@ -214,23 +216,17 @@ export default function CasesPage({
                             <CardTitle className="text-base text-foreground font-semibold">
                               {case_.title}
                             </CardTitle>
-                            <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
-                              {mockCase.specialty}
-                            </Badge>
                           </div>
                         </div>
-                        <Badge
-                          variant="secondary"
-                          className={getStatusColor(mockCase.status)}
-                        >
-                          {mockCase.status}
+                        <Badge variant="secondary" className={getStatusColor(case_.status)}>
+                          {case_.status || "—"}
                         </Badge>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-2 pt-0 flex-1 pb-4">
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                         <User className="h-3.5 w-3.5 flex-shrink-0" />
-                        <span className="truncate text-xs">{mockCase.client}</span>
+                        <span className="truncate text-xs">{clientName}</span>
                       </div>
                       <div className="text-xs text-muted-foreground line-clamp-2">
                         {case_.description}
@@ -240,27 +236,15 @@ export default function CasesPage({
                         <span className="text-xs">
                           {(() => {
                             try {
-                              return new Date(mockCase.startDate).toLocaleDateString('es-AR');
+                              return case_.created_at
+                                ? new Date(case_.created_at).toLocaleDateString("es-AR")
+                                : "Fecha no disponible";
                             } catch {
-                              return 'Fecha no disponible';
+                              return "Fecha no disponible";
                             }
                           })()}
                         </span>
                       </div>
-                      {mockCase.nextHearing && (
-                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                          <Calendar className="h-3.5 w-3.5 flex-shrink-0" />
-                          <span className="text-xs">
-                            Próxima: {(() => {
-                              try {
-                                return new Date(mockCase.nextHearing).toLocaleDateString('es-AR');
-                              } catch {
-                                return 'Fecha no disponible';
-                              }
-                            })()}
-                          </span>
-                        </div>
-                      )}
                     </CardContent>
                     <div className="px-4 pb-0 pt-0">
                       <Button
