@@ -56,10 +56,10 @@ export const createClient = async (client: Omit<Client, "id">) => {
   return response.json() as Promise<Client>;
 };
 
-export const getClientFiles = async (caseId: string) => {
+export const getClientFiles = async (clientId: string) => {
   const requestCookies = await cookies();
   const token = requestCookies.get("session")?.value || "";
-  const response = await fetch(`${apiUrl}/api/clients/${caseId}/files`, {
+  const response = await fetch(`${apiUrl}/api/clients/${clientId}/files`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
