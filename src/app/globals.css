@@ -145,6 +145,12 @@
     background: white !important;
   }
 
+  /* Keep URLs readable */
+  a {
+    color: black !important;
+    text-decoration: none !important;
+  }
+
   .print-page {
     padding: 0;
     max-width: none !important;

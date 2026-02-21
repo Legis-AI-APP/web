@@ -106,7 +106,14 @@ export default async function Page({
             {files.map((f) => (
               <li key={f.url || f.name} className="rounded-standard border border-border p-3">
                 <div className="text-sm font-medium">{f.name}</div>
-                <div className="text-xs text-muted-foreground break-all">{f.url}</div>
+                <a
+                  href={f.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs text-muted-foreground break-all hover:underline"
+                >
+                  {f.url}
+                </a>
               </li>
             ))}
           </ul>
