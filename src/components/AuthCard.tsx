@@ -124,6 +124,8 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
               placeholder="tu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete={type === "login" ? "username" : "email"}
+              inputMode="email"
               className={`h-10 rounded-standard ${formTouched && errors.email
                 ? "border-red-500 focus-visible:ring-red-500"
                 : ""
@@ -147,6 +149,7 @@ export default function AuthCard({ type }: { type: "login" | "register" }) {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete={type === "login" ? "current-password" : "new-password"}
               className={`h-10 rounded-standard ${formTouched && errors.password
                 ? "border-red-500 focus-visible:ring-red-500"
                 : ""
