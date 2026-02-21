@@ -66,9 +66,7 @@ export const getClientCases = async (clientId: string) => {
   const requestCookies = await cookies();
   const token = requestCookies.get("session")?.value || "";
   const response = await fetch(`${apiUrl}/api/clients/${clientId}/cases`, {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   if (!response.ok) throw new Error(await response.json());
   const json = (await response.json()) as Array<Record<string, unknown>>;
@@ -99,9 +97,7 @@ export const getClientPersons = async (clientId: string) => {
   const requestCookies = await cookies();
   const token = requestCookies.get("session")?.value || "";
   const response = await fetch(`${apiUrl}/api/clients/${clientId}/persons`, {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   if (!response.ok) throw new Error(await response.json());
   const json = (await response.json()) as ClientPersonDto[];

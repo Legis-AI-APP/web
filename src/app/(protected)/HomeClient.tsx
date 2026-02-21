@@ -26,12 +26,12 @@ export default function HomeClient({
 
   const suggestions = useMemo(
     () => [
-      "¿Querés que analice un contrato?",
-      "¿Redactamos una carta documento?",
-      "¿Necesitás ayuda con un reclamo por daños?",
-      "¿Tenés dudas sobre derechos del consumidor?",
-      "Explicame una cláusula de confidencialidad",
-      "Hacé un resumen legal de este PDF",
+      "Sos abogado/a en Argentina. Hacé un resumen ejecutivo del caso en 10 bullets",
+      "Redactá una carta documento (Argentina) con placeholders",
+      "Checklist de próximos pasos para este asunto",
+      "Explicame una cláusula de confidencialidad en criollo",
+      "Revisá este texto y marcá riesgos legales",
+      "Borrador de email al cliente pidiendo documentación",
     ],
     []
   );
