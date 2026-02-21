@@ -8,8 +8,16 @@ export default async function Page() {
   // MVP safeguard: cap fan-out to avoid N+1 explosion on large accounts.
   // (Later: server endpoint to search documents without fetching everything.)
   const MAX_OWNERS = 50;
-  const cases = casesAll.slice(0, MAX_OWNERS);
-  const clients = clientsAll.slice(0, MAX_OWNERS);
+
+  const cases = [...casesAll]
+    .sort((a, b) => {
+      const at = a.updated_at ? Date.parse(a.updated_at) : 0;
+      const bt = b.updated_at ? Date.parse(b.updated_at) : 0;
+      return bt - at;
+    })
+    .slice(0, MAX_OWNERS);
+
+  const clients = [...clientsAll].slice(0, MAX_OWNERS);
 
   const [caseFiles, clientFiles] = await Promise.all([
     Promise.all(
