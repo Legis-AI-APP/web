@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -150,6 +151,21 @@ export default function DraftEditor({
             </Button>
             <Button type="button" variant="outline" onClick={() => setResult("")}> 
               Limpiar
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={result.trim().length === 0}
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(result);
+                  toast.success("Borrador copiado");
+                } catch {
+                  toast.error("No se pudo copiar");
+                }
+              }}
+            >
+              Copiar
             </Button>
             {canPersist && (
               <>
