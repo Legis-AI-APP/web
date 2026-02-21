@@ -288,6 +288,23 @@ export default function DraftEditor({
 
   const canUseAi = Boolean(askEndpoint);
 
+  const missingRequiredForTemplate = useMemo(() => {
+    if (!selectedTemplate) return [] as string[];
+    const missing: string[] = [];
+
+    if (selectedTemplate.id === "carta-documento") {
+      if (!docRecipient.trim()) missing.push("Destinatario");
+      if (!docBody.trim()) missing.push("Cuerpo");
+    }
+
+    if (selectedTemplate.id === "email-cliente") {
+      if (!docSubject.trim()) missing.push("Asunto");
+      if (!docSignature.trim()) missing.push("Firma");
+    }
+
+    return missing;
+  }, [docBody, docRecipient, docSignature, docSubject, selectedTemplate]);
+
   const ensureAiChat = useMemo(
     () => async (): Promise<string | null> => {
       if (aiChatId) return aiChatId;
@@ -568,8 +585,21 @@ export default function DraftEditor({
             </Button>
 
             {canUseAi ? (
-              <Button type="button" disabled={aiLoading} onClick={() => void generateWithAi()}>
-                {aiLoading ? "Generando…" : "Generar con IA"}
+              <Button
+                type="button"
+                disabled={aiLoading || missingRequiredForTemplate.length > 0}
+                onClick={() => void generateWithAi()}
+                title={
+                  missingRequiredForTemplate.length > 0
+                    ? `Faltan campos: ${missingRequiredForTemplate.join(", ")}`
+                    : undefined
+                }
+              >
+                {aiLoading
+                  ? "Generando…"
+                  : missingRequiredForTemplate.length > 0
+                    ? "Completá campos"
+                    : "Generar con IA"}
               </Button>
             ) : null}
             <Button type="button" variant="outline" onClick={() => setResult("")}> 
