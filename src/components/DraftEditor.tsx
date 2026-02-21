@@ -138,6 +138,18 @@ export default function DraftEditor({
   const [jurisdiction, setJurisdiction] = useState("");
   const [facts, setFacts] = useState("");
   const [goal, setGoal] = useState("");
+
+  // Template-specific doc fields (MVP)
+  const [docDatePlace, setDocDatePlace] = useState("");
+  const [docRecipient, setDocRecipient] = useState("");
+  const [docRecipientAddress, setDocRecipientAddress] = useState("");
+  const [docBody, setDocBody] = useState("");
+
+  const [docSubject, setDocSubject] = useState("");
+  const [docSummary, setDocSummary] = useState("");
+  const [docPending, setDocPending] = useState("");
+  const [docNextSteps, setDocNextSteps] = useState("");
+  const [docSignature, setDocSignature] = useState("");
   const [result, setResult] = useState("");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
 
@@ -245,17 +257,32 @@ export default function DraftEditor({
       "{{doc.facts}}": facts || "{{doc.facts}}",
 
       // Optional placeholders for specific templates
-      "{{doc.datePlace}}": "{{doc.datePlace}}",
-      "{{doc.recipient}}": "{{doc.recipient}}",
-      "{{doc.recipientAddress}}": "{{doc.recipientAddress}}",
-      "{{doc.body}}": "{{doc.body}}",
-      "{{doc.subject}}": "{{doc.subject}}",
-      "{{doc.summary}}": "{{doc.summary}}",
-      "{{doc.pending}}": "{{doc.pending}}",
-      "{{doc.nextSteps}}": "{{doc.nextSteps}}",
-      "{{doc.signature}}": "{{doc.signature}}",
+      "{{doc.datePlace}}": docDatePlace || "{{doc.datePlace}}",
+      "{{doc.recipient}}": docRecipient || "{{doc.recipient}}",
+      "{{doc.recipientAddress}}": docRecipientAddress || "{{doc.recipientAddress}}",
+      "{{doc.body}}": docBody || "{{doc.body}}",
+      "{{doc.subject}}": docSubject || "{{doc.subject}}",
+      "{{doc.summary}}": docSummary || "{{doc.summary}}",
+      "{{doc.pending}}": docPending || "{{doc.pending}}",
+      "{{doc.nextSteps}}": docNextSteps || "{{doc.nextSteps}}",
+      "{{doc.signature}}": docSignature || "{{doc.signature}}",
     } as const;
-  }, [context, docType, facts, goal, jurisdiction]);
+  }, [
+    context,
+    docBody,
+    docDatePlace,
+    docNextSteps,
+    docPending,
+    docRecipient,
+    docRecipientAddress,
+    docSignature,
+    docSubject,
+    docSummary,
+    docType,
+    facts,
+    goal,
+    jurisdiction,
+  ]);
 
   const renderTemplate = useMemo(
     () => (text: string) => {
@@ -364,6 +391,67 @@ export default function DraftEditor({
             value={jurisdiction}
             onChange={(e) => setJurisdiction(e.currentTarget.value)}
           />
+
+          {/* Template-specific fields */}
+          {selectedTemplate?.id === "carta-documento" ? (
+            <>
+              <Input
+                placeholder="Fecha / lugar (ej: CABA, 21/02/2026)"
+                value={docDatePlace}
+                onChange={(e) => setDocDatePlace(e.currentTarget.value)}
+              />
+              <Input
+                placeholder="Destinatario"
+                value={docRecipient}
+                onChange={(e) => setDocRecipient(e.currentTarget.value)}
+              />
+              <Input
+                placeholder="Domicilio del destinatario"
+                value={docRecipientAddress}
+                onChange={(e) => setDocRecipientAddress(e.currentTarget.value)}
+              />
+              <Textarea
+                value={docBody}
+                onChange={(e) => setDocBody(e.currentTarget.value)}
+                placeholder="Cuerpo de la carta documento"
+                rows={5}
+              />
+            </>
+          ) : null}
+
+          {selectedTemplate?.id === "email-cliente" ? (
+            <>
+              <Input
+                placeholder="Asunto"
+                value={docSubject}
+                onChange={(e) => setDocSubject(e.currentTarget.value)}
+              />
+              <Textarea
+                value={docSummary}
+                onChange={(e) => setDocSummary(e.currentTarget.value)}
+                placeholder="Resumen"
+                rows={3}
+              />
+              <Textarea
+                value={docPending}
+                onChange={(e) => setDocPending(e.currentTarget.value)}
+                placeholder="Pendientes / lo que necesito del cliente"
+                rows={3}
+              />
+              <Textarea
+                value={docNextSteps}
+                onChange={(e) => setDocNextSteps(e.currentTarget.value)}
+                placeholder="Próximos pasos"
+                rows={3}
+              />
+              <Input
+                placeholder="Firma (ej: Dr/a. X - Estudio Y)"
+                value={docSignature}
+                onChange={(e) => setDocSignature(e.currentTarget.value)}
+              />
+            </>
+          ) : null}
+
           <Textarea
             value={facts}
             onChange={(e) => setFacts(e.currentTarget.value)}
