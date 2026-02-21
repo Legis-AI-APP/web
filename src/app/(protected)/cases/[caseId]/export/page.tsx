@@ -1,6 +1,7 @@
 import Link from "next/link";
 import PrintButton from "@/components/PrintButton";
 import { getCase, getCaseEvents, getCaseFiles } from "@/lib/cases-service";
+import { getClient } from "@/lib/clients-service";
 
 export default async function Page({
   params,
@@ -13,6 +14,11 @@ export default async function Page({
     getCaseFiles(caseId),
     getCaseEvents(caseId),
   ]);
+
+  const client = c.client_id ? await getClient(c.client_id).catch(() => null) : null;
+  const clientName = client
+    ? [client.first_name, client.last_name].filter(Boolean).join(" ") || client.id
+    : c.client_id || "—";
 
   return (
     <div className="print-page max-w-3xl mx-auto space-y-6">
@@ -37,7 +43,8 @@ export default async function Page({
           </div>
           <div className="rounded-standard border border-border p-3">
             <div className="text-xs text-muted-foreground">Cliente</div>
-            <div>{c.client_id || "—"}</div>
+            <div>{clientName}</div>
+            {client?.email && <div className="text-xs text-muted-foreground">{client.email}</div>}
           </div>
           <div className="rounded-standard border border-border p-3">
             <div className="text-xs text-muted-foreground">Creado</div>
