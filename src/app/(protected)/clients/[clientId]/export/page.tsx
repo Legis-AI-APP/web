@@ -22,12 +22,16 @@ export default async function Page({
   params: Promise<{ clientId: string }>;
 }) {
   const { clientId } = await params;
-  const [client, files, cases, persons] = await Promise.all([
+  const [client, filesRaw, casesRaw, personsRaw] = await Promise.all([
     getClient(clientId),
     getClientFiles(clientId),
     getClientCases(clientId),
     getClientPersons(clientId),
   ]);
+
+  const files = [...filesRaw].sort((a, b) => a.name.localeCompare(b.name));
+  const cases = [...casesRaw].sort((a, b) => a.title.localeCompare(b.title));
+  const persons = [...personsRaw].sort((a, b) => a.name.localeCompare(b.name));
 
   const fullName = [client.first_name, client.last_name].filter(Boolean).join(" ") || "(sin nombre)";
 

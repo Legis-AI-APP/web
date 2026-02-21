@@ -22,11 +22,18 @@ export default async function Page({
   params: Promise<{ caseId: string }>;
 }) {
   const { caseId } = await params;
-  const [c, files, events] = await Promise.all([
+  const [c, filesRaw, eventsRaw] = await Promise.all([
     getCase(caseId),
     getCaseFiles(caseId),
     getCaseEvents(caseId),
   ]);
+
+  const files = [...filesRaw].sort((a, b) => a.name.localeCompare(b.name));
+  const events = [...eventsRaw].sort((a, b) => {
+    const at = a.created_at ? Date.parse(a.created_at) : 0;
+    const bt = b.created_at ? Date.parse(b.created_at) : 0;
+    return bt - at;
+  });
 
   const client = c.client_id ? await getClient(c.client_id).catch(() => null) : null;
   const clientName = client
