@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getClient, getClientFiles } from "@/lib/clients-service";
+import { getClient, getClientCases, getClientFiles } from "@/lib/clients-service";
 
 export default async function Page({
   params,
@@ -7,7 +7,11 @@ export default async function Page({
   params: Promise<{ clientId: string }>;
 }) {
   const { clientId } = await params;
-  const [client, files] = await Promise.all([getClient(clientId), getClientFiles(clientId)]);
+  const [client, files, cases] = await Promise.all([
+    getClient(clientId),
+    getClientFiles(clientId),
+    getClientCases(clientId),
+  ]);
 
   const fullName = [client.first_name, client.last_name].filter(Boolean).join(" ") || "(sin nombre)";
 
@@ -56,6 +60,24 @@ export default async function Page({
             <div>{client.address || "—"}</div>
           </div>
         </div>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-sm font-semibold">Casos ({cases.length})</h2>
+        {cases.length === 0 ? (
+          <div className="text-sm text-muted-foreground">Sin casos asociados.</div>
+        ) : (
+          <ul className="space-y-2">
+            {cases.map((c) => (
+              <li key={c.id} className="rounded-standard border border-border p-3">
+                <div className="text-sm font-medium">{c.title}</div>
+                <div className="text-xs text-muted-foreground">
+                  {[c.status, c.id].filter(Boolean).join(" · ")}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className="space-y-2">

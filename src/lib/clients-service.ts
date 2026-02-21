@@ -1,6 +1,7 @@
 "use server";
 
 import { LegisFile } from "./legis-file";
+import type { Case } from "./cases-service";
 import { apiUrl } from "./api";
 import { cookies } from "next/headers";
 
@@ -64,6 +65,39 @@ export const getClientFiles = async (caseId: string) => {
   });
   if (!response.ok) throw new Error(await response.json());
   return response.json() as Promise<LegisFile[]>;
+};
+
+export const getClientCases = async (clientId: string) => {
+  const requestCookies = await cookies();
+  const token = requestCookies.get("session")?.value || "";
+  const response = await fetch(`${apiUrl}/api/clients/${clientId}/cases`, {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+  });
+  if (!response.ok) throw new Error(await response.json());
+  const json = (await response.json()) as Array<Record<string, unknown>>;
+
+  const pickString = (obj: Record<string, unknown>, key: string): string | undefined => {
+    const v = obj[key];
+    return typeof v === "string" ? v : undefined;
+  };
+
+  // Support both snake_case (web legacy) and camelCase (api contract)
+  const normalized = json.map((c) => {
+    const client_id = pickString(c, "client_id") ?? pickString(c, "clientId") ?? "";
+    const created_at = pickString(c, "created_at") ?? pickString(c, "createdAt") ?? "";
+    const updated_at = pickString(c, "updated_at") ?? pickString(c, "updatedAt") ?? "";
+
+    return {
+      ...(c as unknown as Case),
+      client_id,
+      created_at,
+      updated_at,
+    };
+  });
+
+  return normalized as Case[];
 };
 
 export async function uploadClientFile(clientId: string, file: File) {
