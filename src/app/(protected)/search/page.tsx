@@ -24,30 +24,39 @@ export default async function SearchPage({
   const [cases, clients] = await Promise.all([getCases(), getClients()]);
 
   const matchedCases = query
-    ? cases.filter((c) =>
-        normalize([c.title, c.description, c.status].filter(Boolean).join(" ")).includes(query),
-      )
+    ? cases
+        .filter((c) =>
+          normalize([c.title, c.description, c.status].filter(Boolean).join(" ")).includes(query),
+        )
+        .sort((a, b) => a.title.localeCompare(b.title))
     : [];
 
   const matchedClients = query
-    ? clients.filter((c) =>
-        normalize(
-          [
-            c.first_name,
-            c.last_name,
-            c.email,
-            c.document,
-            c.document_type,
-            c.phone,
-            c.address,
-          ]
-            .filter(Boolean)
-            .join(" "),
-        ).includes(query),
-      )
+    ? clients
+        .filter((c) =>
+          normalize(
+            [
+              c.first_name,
+              c.last_name,
+              c.email,
+              c.document,
+              c.document_type,
+              c.phone,
+              c.address,
+            ]
+              .filter(Boolean)
+              .join(" "),
+          ).includes(query),
+        )
+        .sort((a, b) => {
+          const an = normalize([a.first_name, a.last_name].filter(Boolean).join(" "));
+          const bn = normalize([b.first_name, b.last_name].filter(Boolean).join(" "));
+          return an.localeCompare(bn);
+        })
     : [];
 
   const hasResults = matchedCases.length > 0 || matchedClients.length > 0;
+  const totalResults = matchedCases.length + matchedClients.length;
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
@@ -87,9 +96,13 @@ export default async function SearchPage({
             <div className="text-sm text-muted-foreground">Sin resultados para “{q}”.</div>
           ) : (
             <>
+              <div className="text-xs text-muted-foreground">{totalResults} resultado(s)</div>
+
               {matchedCases.length > 0 && (
                 <div className="space-y-2">
-                  <div className="text-xs font-medium text-muted-foreground">Casos</div>
+                  <div className="text-xs font-medium text-muted-foreground">
+                    Casos ({matchedCases.length})
+                  </div>
                   <div className="space-y-2">
                     {matchedCases.map((c) => (
                       <Link
@@ -111,7 +124,9 @@ export default async function SearchPage({
 
               {matchedClients.length > 0 && (
                 <div className="space-y-2">
-                  <div className="text-xs font-medium text-muted-foreground">Clientes</div>
+                  <div className="text-xs font-medium text-muted-foreground">
+                    Clientes ({matchedClients.length})
+                  </div>
                   <div className="space-y-2">
                     {matchedClients.map((c) => (
                       <Link
