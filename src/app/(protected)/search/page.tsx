@@ -79,8 +79,14 @@ export default async function SearchPage({
               placeholder="Caso, cliente, email, DNI, palabra clave…"
               defaultValue={q}
               autoComplete="off"
+              autoFocus
             />
             <Button type="submit">Buscar</Button>
+            {q ? (
+              <Button type="button" variant="outline" asChild>
+                <Link href="/search">Limpiar</Link>
+              </Button>
+            ) : null}
           </form>
         </CardContent>
       </Card>
