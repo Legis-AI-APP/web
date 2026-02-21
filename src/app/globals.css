@@ -139,6 +139,12 @@
     display: none !important;
   }
 
+  /* Force background printing where supported */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   /* Ensure clean white page */
   html,
   body {
