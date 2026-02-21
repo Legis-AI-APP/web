@@ -8,5 +8,5 @@ export default async function Page({
 }) {
   const { clientId } = await params;
   const [client, files] = await Promise.all([getClient(clientId), getClientFiles(clientId)]);
-  return <ClientPage client={client} files={files} />;
+  return <ClientPage client={client} files={files} contextLabel="Resumen" />;
 }

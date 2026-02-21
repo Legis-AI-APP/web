@@ -15,9 +15,11 @@ import EntitySubnav from "@/components/EntitySubnav";
 export default function ClientPage({
   client,
   files,
+  contextLabel,
 }: {
   client: Client;
   files: LegisFile[];
+  contextLabel?: string;
 }) {
   // Persons
   const [persons, setPersons] = useState<ClientPersonDto[]>([]);
@@ -111,6 +113,7 @@ export default function ClientPage({
         scopeBasePath={`/clients/${client.id}`}
         headerTitle="IA Legal — Cliente"
         headerSubtitle={`${client.first_name} ${client.last_name}`}
+        contextLabel={contextLabel}
         listChatsPath={`/api/clients/${client.id}/chats`}
         createChatPath={`/api/clients/${client.id}/chats`}
         askPath={`/api/ai/ask/client/${client.id}`}

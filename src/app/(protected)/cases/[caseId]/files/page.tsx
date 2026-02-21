@@ -8,5 +8,12 @@ export default async function Page({
 }) {
   const { caseId } = await params;
   const [oldCase, files] = await Promise.all([getCase(caseId), getCaseFiles(caseId)]);
-  return <CasePage oldCase={oldCase} files={files} initialPanelTab="documents" />;
+  return (
+    <CasePage
+      oldCase={oldCase}
+      files={files}
+      initialPanelTab="documents"
+      contextLabel="Docs"
+    />
+  );
 }
