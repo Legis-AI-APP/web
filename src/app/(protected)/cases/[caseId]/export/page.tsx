@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PrintButton from "@/components/PrintButton";
 import { getCase, getCaseEvents, getCaseFiles } from "@/lib/cases-service";
 
 export default async function Page({
@@ -19,13 +20,7 @@ export default async function Page({
         <Link href={`/cases/${caseId}/overview`} className="text-sm text-muted-foreground hover:underline">
           ← Volver al caso
         </Link>
-        <button
-          type="button"
-          className="rounded-standard border border-border px-3 py-2 text-sm hover:bg-muted/40"
-          onClick={() => window.print()}
-        >
-          Imprimir / Guardar PDF
-        </button>
+        <PrintButton />
       </div>
 
       <header className="space-y-1">

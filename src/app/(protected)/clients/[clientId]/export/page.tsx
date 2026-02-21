@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PrintButton from "@/components/PrintButton";
 import { getClient, getClientCases, getClientFiles, getClientPersons } from "@/lib/clients-service";
 
 export default async function Page({
@@ -25,13 +26,7 @@ export default async function Page({
         >
           ← Volver al cliente
         </Link>
-        <button
-          type="button"
-          className="rounded-standard border border-border px-3 py-2 text-sm hover:bg-muted/40"
-          onClick={() => window.print()}
-        >
-          Imprimir / Guardar PDF
-        </button>
+        <PrintButton />
       </div>
 
       <header className="space-y-1">
