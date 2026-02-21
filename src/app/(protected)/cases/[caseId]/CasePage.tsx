@@ -1,7 +1,6 @@
 "use client";
 
 import type { Case } from "@/lib/cases-service";
-import type { LegisFile } from "@/lib/legis-file";
 
 import ScopedChatWorkspace from "@/components/ScopedChatWorkspace";
 import CaseDetailPanel from "@/components/CaseDetailPanel";
@@ -10,17 +9,14 @@ import EntitySubnav from "@/components/EntitySubnav";
 export default function CasePage({
   oldCase,
   clientName,
-  files: _files,
   initialPanelTab,
   contextLabel,
 }: {
   oldCase: Case;
   clientName?: string;
-  files: LegisFile[];
   initialPanelTab?: "movements" | "documents" | "dates" | "notes";
   contextLabel?: string;
 }) {
-  void _files;
 
   const caseData = {
     id: oldCase.id,
