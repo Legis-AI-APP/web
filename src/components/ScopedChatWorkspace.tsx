@@ -89,12 +89,96 @@ export default function ScopedChatWorkspace({
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const suggestions = useMemo(() => {
+    const ctx = (contextLabel ?? "").toLowerCase();
+
     if (scopeLabel === "Asunto") {
+      if (ctx.includes("doc")) {
+        return [
+          "Listá los documentos clave del caso y qué falta",
+          "Armá un índice de documentación (con prioridades)",
+          "¿Qué evidencia respalda cada hecho?",
+          "Checklist de próximos pasos con base en los documentos",
+        ];
+      }
+
+      if (ctx.includes("actividad")) {
+        return [
+          "Resumí la actividad reciente y lo pendiente",
+          "Detectá riesgos/plazos implícitos en los movimientos",
+          "Checklist de próximos pasos (con due dates sugeridas)",
+          "Qué le pedirías al cliente para destrabar el siguiente paso",
+        ];
+      }
+
+      if (ctx.includes("borrador")) {
+        return [
+          "Proponé una estructura de escrito (títulos + bullets)",
+          "Redactá un borrador con placeholders y tono profesional",
+          "Listá hechos que faltan para completar el escrito",
+          "Generá variantes: breve / estándar / agresiva",
+        ];
+      }
+
+      if (ctx.includes("export")) {
+        return [
+          "Generá un resumen ejecutivo para export/PDF",
+          "Armá un timeline del caso (hitos + fechas)",
+          "Checklist de anexos para presentar",
+          "Proponé una carátula/portada para el PDF",
+        ];
+      }
+
       return [
         "Resumime el caso (hechos, estado, riesgos)",
         "Checklist de próximos pasos",
         "Proponé estrategia (hipótesis, fortalezas, riesgos)",
         "Generá un borrador de escrito (con placeholders)",
+      ];
+    }
+
+    // Cliente
+    if (ctx.includes("doc")) {
+      return [
+        "¿Qué documentos faltan del cliente?",
+        "Armá un checklist de onboarding (documentación + datos)",
+        "Resumí documentos por tipo y si están vigentes",
+        "Proponé un email para pedir la documentación faltante",
+      ];
+    }
+
+    if (ctx.includes("persona")) {
+      return [
+        "Resumí roles y relaciones de las personas asociadas",
+        "Detectá conflictos/alertas (roles incompatibles, faltantes)",
+        "Qué datos de contacto faltan",
+        "Generá una minuta para entrevista inicial",
+      ];
+    }
+
+    if (ctx.includes("caso")) {
+      return [
+        "Resumí los casos del cliente (estado y prioridad)",
+        "Identificá el caso más urgente y por qué",
+        "Checklist de tareas por caso",
+        "Qué información falta para cada caso",
+      ];
+    }
+
+    if (ctx.includes("borrador")) {
+      return [
+        "Redactá una nota/carta al cliente (con placeholders)",
+        "Checklist de próximos pasos del cliente",
+        "Preguntas clave para completar el borrador",
+        "Versión breve para WhatsApp + versión formal",
+      ];
+    }
+
+    if (ctx.includes("export")) {
+      return [
+        "Generá un resumen ejecutivo del cliente para export/PDF",
+        "Armá una ficha de cliente (datos + pendientes)",
+        "Checklist de documentación y casos asociados",
+        "Proponé una portada para el PDF",
       ];
     }
 
@@ -104,7 +188,7 @@ export default function ScopedChatWorkspace({
       "Checklist de diligencias",
       "Generá un borrador de nota/carta (con placeholders)",
     ];
-  }, [scopeLabel]);
+  }, [scopeLabel, contextLabel]);
 
   const titleForChat = useCallback(
     (id: string, title?: string | null) => {
