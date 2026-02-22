@@ -17,8 +17,18 @@ export default function PwaServiceWorker() {
           toast.message("Actualización disponible", {
             description: "Recargá para aplicar la nueva versión.",
             action: {
-              label: "Recargar",
-              onClick: () => window.location.reload(),
+              label: "Actualizar",
+              onClick: async () => {
+                try {
+                  reg.waiting?.postMessage({ type: "SKIP_WAITING" });
+                } finally {
+                  // When the new SW takes control, reload to get fresh assets.
+                  const onControllerChange = () => window.location.reload();
+                  navigator.serviceWorker.addEventListener("controllerchange", onControllerChange, {
+                    once: true,
+                  });
+                }
+              },
             },
           });
         };
