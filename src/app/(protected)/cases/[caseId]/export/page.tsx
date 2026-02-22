@@ -37,7 +37,8 @@ export default async function Page({
   });
 
   const client = oldCase.client_id ? await getClient(oldCase.client_id).catch(() => null) : null;
-  const clientName = client ? `${client.first_name} ${client.last_name}`.trim() : undefined;
+  const clientFullName = client ? `${client.first_name} ${client.last_name}`.trim() : "";
+  const clientName = clientFullName.length > 0 ? clientFullName : undefined;
 
   return (
     <CasePage
