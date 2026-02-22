@@ -134,6 +134,10 @@
 }
 
 @media print {
+  @page {
+    margin: 16mm;
+  }
+
   /* Hide UI elements not meant for print */
   .print-hide {
     display: none !important;
@@ -161,9 +165,18 @@
   li,
   section,
   header,
-  footer {
+  footer,
+  h1,
+  h2,
+  h3 {
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  /* Prefer compact print typography */
+  body {
+    font-size: 12px;
+    line-height: 1.35;
   }
 
   .print-page {
