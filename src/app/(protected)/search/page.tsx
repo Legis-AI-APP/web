@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getCases } from "@/lib/cases-service";
 import { getClients } from "@/lib/clients-service";
+import SearchAskAi from "@/components/SearchAskAi";
 
 function normalize(s: string) {
   return s
@@ -102,63 +103,70 @@ export default async function SearchPage({
           <CardContent className="space-y-4">
             {!query ? (
               <div className="text-sm text-muted-foreground">Escribí una consulta para buscar.</div>
-            ) : !hasResults ? (
-              <div className="text-sm text-muted-foreground">Sin resultados para “{q}”.</div>
             ) : (
               <>
-                <div className="text-xs text-muted-foreground">{totalResults} resultado(s)</div>
+                {!hasResults ? (
+                  <div className="text-sm text-muted-foreground">Sin resultados para “{q}”.</div>
+                ) : (
+                  <>
+                    <div className="text-xs text-muted-foreground">{totalResults} resultado(s)</div>
 
-              {matchedCases.length > 0 && (
-                <div className="space-y-2">
-                  <div className="text-xs font-medium text-muted-foreground">
-                    Casos ({matchedCases.length})
-                  </div>
-                  <div className="space-y-2">
-                    {matchedCases.map((c) => (
-                      <Link
-                        key={c.id}
-                        href={`/cases/${c.id}/overview`}
-                        className="block rounded-standard border border-border p-3 hover:bg-muted/40"
-                      >
-                        <div className="text-sm font-medium">{c.title}</div>
-                        {c.description && (
-                          <div className="text-xs text-muted-foreground line-clamp-2">
-                            {c.description}
-                          </div>
-                        )}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    {matchedCases.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="text-xs font-medium text-muted-foreground">
+                          Casos ({matchedCases.length})
+                        </div>
+                        <div className="space-y-2">
+                          {matchedCases.map((c) => (
+                            <Link
+                              key={c.id}
+                              href={`/cases/${c.id}/overview`}
+                              className="block rounded-standard border border-border p-3 hover:bg-muted/40"
+                            >
+                              <div className="text-sm font-medium">{c.title}</div>
+                              {c.description && (
+                                <div className="text-xs text-muted-foreground line-clamp-2">
+                                  {c.description}
+                                </div>
+                              )}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-              {matchedClients.length > 0 && (
-                <div className="space-y-2">
-                  <div className="text-xs font-medium text-muted-foreground">
-                    Clientes ({matchedClients.length})
-                  </div>
-                  <div className="space-y-2">
-                    {matchedClients.map((c) => (
-                      <Link
-                        key={c.id}
-                        href={`/clients/${c.id}/overview`}
-                        className="block rounded-standard border border-border p-3 hover:bg-muted/40"
-                      >
-                        <div className="text-sm font-medium">
-                          {[c.first_name, c.last_name].filter(Boolean).join(" ") || "(sin nombre)"}
+                    {matchedClients.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="text-xs font-medium text-muted-foreground">
+                          Clientes ({matchedClients.length})
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {[c.email, c.document].filter(Boolean).join(" · ")}
+                        <div className="space-y-2">
+                          {matchedClients.map((c) => (
+                            <Link
+                              key={c.id}
+                              href={`/clients/${c.id}/overview`}
+                              className="block rounded-standard border border-border p-3 hover:bg-muted/40"
+                            >
+                              <div className="text-sm font-medium">
+                                {[c.first_name, c.last_name].filter(Boolean).join(" ") ||
+                                  "(sin nombre)"}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {[c.email, c.document].filter(Boolean).join(" · ")}
+                              </div>
+                            </Link>
+                          ))}
                         </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                <SearchAskAi query={q} />
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
