@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,11 @@ export default function SearchAskAi({ query }: { query: string }) {
   const [chatId, setChatId] = useState<string | null>(null);
 
   const storageKey = "legis.search.aiChatId";
+
+  useEffect(() => {
+    // avoid showing stale suggestions for a different query
+    setResult("");
+  }, [query]);
 
   const ensureChat = useMemo(
     () => async (): Promise<string | null> => {
@@ -94,12 +99,27 @@ export default function SearchAskAi({ query }: { query: string }) {
         <div className="text-xs text-muted-foreground">
           Te ayuda a mejorar la búsqueda. Si menciona normas/jurisprudencia: verificá fuentes.
         </div>
-        <div className="flex gap-2">
-          <Button type="button" onClick={() => void ask()} disabled={loading || !query.trim()}>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" onClick={() => void ask()} disabled={loading || query.trim().length < 2}>
             {loading ? "Consultando…" : "Preguntar"}
           </Button>
           <Button type="button" variant="outline" onClick={() => setResult("")} disabled={loading}>
             Limpiar
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!result.trim() || loading}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(result);
+                toast.success("Copiado");
+              } catch {
+                toast.error("No se pudo copiar");
+              }
+            }}
+          >
+            Copiar
           </Button>
         </div>
         {result ? (
