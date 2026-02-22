@@ -11,11 +11,13 @@ export default function CasePage({
   clientName,
   initialPanelTab,
   contextLabel,
+  rightPanelContent,
 }: {
   oldCase: Case;
   clientName?: string;
   initialPanelTab?: "movements" | "documents" | "dates" | "notes";
   contextLabel?: string;
+  rightPanelContent?: React.ReactNode;
 }) {
 
   const caseData = {
@@ -52,14 +54,18 @@ export default function CasePage({
                 ]}
               />
             </div>
-            <div className="flex-1 min-h-0">
-              <CaseDetailPanel
-                mode="sidebar"
-                isOpen={true}
-                onClose={() => {}}
-                caseData={caseData}
-                initialTab={initialPanelTab}
-              />
+            <div className="flex-1 min-h-0 overflow-auto">
+              {rightPanelContent ? (
+                <div className="p-4">{rightPanelContent}</div>
+              ) : (
+                <CaseDetailPanel
+                  mode="sidebar"
+                  isOpen={true}
+                  onClose={() => {}}
+                  caseData={caseData}
+                  initialTab={initialPanelTab}
+                />
+              )}
             </div>
           </div>
         }

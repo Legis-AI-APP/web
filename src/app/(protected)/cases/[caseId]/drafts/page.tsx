@@ -1,7 +1,7 @@
-import Link from "next/link";
 import DraftEditor from "@/components/DraftEditor";
 import { getCase } from "@/lib/cases-service";
 import { getClient } from "@/lib/clients-service";
+import CasePage from "../CasePage";
 
 export default async function Page({
   params,
@@ -9,41 +9,42 @@ export default async function Page({
   params: Promise<{ caseId: string }>;
 }) {
   const { caseId } = await params;
-  const c = await getCase(caseId);
 
-  const client = c.client_id ? await getClient(c.client_id).catch(() => null) : null;
+  const oldCase = await getCase(caseId);
+  const client = oldCase.client_id ? await getClient(oldCase.client_id).catch(() => null) : null;
+  const clientName = client ? `${client.first_name} ${client.last_name}`.trim() : undefined;
 
   return (
-    <div className="space-y-3">
-      <div className="print-hide">
-        <Link href={`/cases/${caseId}/overview`} className="text-sm text-muted-foreground hover:underline">
-          ← Volver al caso
-        </Link>
-      </div>
-      <DraftEditor
-        title="Borradores — Caso"
-        subtitle={c.title}
-        storageKey={`draft:case:${caseId}`}
-        context={{
-          client: client
-            ? {
-                name: [client.first_name, client.last_name].filter(Boolean).join(" ") || client.id,
-                documentType: client.document_type,
-                document: client.document,
-                email: client.email,
-                phone: client.phone,
-                address: client.address,
-              }
-            : undefined,
-          case: {
-            title: c.title,
-            status: c.status,
-            description: c.description,
-          },
-        }}
-        askEndpoint={`/api/ai/ask/case/${caseId}`}
-        createChatPath={`/api/cases/${caseId}/chats`}
-      />
-    </div>
+    <CasePage
+      oldCase={oldCase}
+      clientName={clientName}
+      contextLabel="Borradores"
+      rightPanelContent={
+        <DraftEditor
+          title="Borradores — Caso"
+          subtitle={oldCase.title}
+          storageKey={`draft:case:${caseId}`}
+          context={{
+            client: client
+              ? {
+                  name: [client.first_name, client.last_name].filter(Boolean).join(" ") || client.id,
+                  documentType: client.document_type,
+                  document: client.document,
+                  email: client.email,
+                  phone: client.phone,
+                  address: client.address,
+                }
+              : undefined,
+            case: {
+              title: oldCase.title,
+              status: oldCase.status,
+              description: oldCase.description,
+            },
+          }}
+          askEndpoint={`/api/ai/ask/case/${caseId}`}
+          createChatPath={`/api/cases/${caseId}/chats`}
+        />
+      }
+    />
   );
 }
