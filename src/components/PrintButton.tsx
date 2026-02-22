@@ -1,5 +1,9 @@
 "use client";
 
+import { Printer } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+
 export default function PrintButton({
   label = "Imprimir / Guardar PDF",
   className,
@@ -8,15 +12,9 @@ export default function PrintButton({
   className?: string;
 }) {
   return (
-    <button
-      type="button"
-      className={
-        className ??
-        "rounded-standard border border-border px-3 py-2 text-sm hover:bg-muted/40"
-      }
-      onClick={() => window.print()}
-    >
+    <Button type="button" variant="outline" className={className} onClick={() => window.print()}>
+      <Printer className="h-4 w-4 mr-2" />
       {label}
-    </button>
+    </Button>
   );
 }

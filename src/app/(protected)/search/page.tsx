@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getCases } from "@/lib/cases-service";
 import { getClients } from "@/lib/clients-service";
+import SearchAskAi from "@/components/SearchAskAi";
 
 function normalize(s: string) {
   return s
@@ -69,95 +70,103 @@ export default async function SearchPage({
       </div>
 
       <div className="px-6 pb-6 sm:px-8 sm:pb-8 max-w-3xl mx-auto space-y-4">
+        <Card className="border-0" style={{ boxShadow: "none" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Consulta</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <form className="flex gap-2" action="/search" method="GET">
+              <Input
+                name="q"
+                placeholder="Caso, cliente, email, DNI, palabra clave…"
+                defaultValue={q}
+                autoComplete="off"
+                autoFocus
+              />
+              <Button type="submit">Buscar</Button>
+              {q ? (
+                <Button type="button" variant="outline" asChild>
+                  <Link href="/search">Limpiar</Link>
+                </Button>
+              ) : null}
+            </form>
+            <div className="text-xs text-muted-foreground">Tip: podés apretar Enter para buscar.</div>
+          </CardContent>
+        </Card>
 
-      <Card className="border-0" style={{ boxShadow: "none" }}>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Consulta</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <form className="flex gap-2" action="/search" method="GET">
-            <Input
-              name="q"
-              placeholder="Caso, cliente, email, DNI, palabra clave…"
-              defaultValue={q}
-              autoComplete="off"
-              autoFocus
-            />
-            <Button type="submit">Buscar</Button>
-            {q ? (
-              <Button type="button" variant="outline" asChild>
-                <Link href="/search">Limpiar</Link>
-              </Button>
-            ) : null}
-          </form>
-          <div className="text-xs text-muted-foreground">Tip: podés apretar Enter para buscar.</div>
-        </CardContent>
-      </Card>
+        <Card className="border-0" style={{ boxShadow: "none" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">
+              Resultados{q ? <span className="text-muted-foreground"> — “{q}”</span> : ""}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!query ? (
+              <div className="text-sm text-muted-foreground">Escribí una consulta para buscar.</div>
+            ) : (
+              <>
+                {!hasResults ? (
+                  <div className="text-sm text-muted-foreground">Sin resultados para “{q}”.</div>
+                ) : (
+                  <>
+                    <div className="text-xs text-muted-foreground">{totalResults} resultado(s)</div>
 
-      <Card className="border-0" style={{ boxShadow: "none" }}>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Resultados</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {!query ? (
-            <div className="text-sm text-muted-foreground">Escribí una consulta para buscar.</div>
-          ) : !hasResults ? (
-            <div className="text-sm text-muted-foreground">Sin resultados para “{q}”.</div>
-          ) : (
-            <>
-              <div className="text-xs text-muted-foreground">{totalResults} resultado(s)</div>
-
-              {matchedCases.length > 0 && (
-                <div className="space-y-2">
-                  <div className="text-xs font-medium text-muted-foreground">
-                    Casos ({matchedCases.length})
-                  </div>
-                  <div className="space-y-2">
-                    {matchedCases.map((c) => (
-                      <Link
-                        key={c.id}
-                        href={`/cases/${c.id}/overview`}
-                        className="block rounded-standard border border-border p-3 hover:bg-muted/40"
-                      >
-                        <div className="text-sm font-medium">{c.title}</div>
-                        {c.description && (
-                          <div className="text-xs text-muted-foreground line-clamp-2">
-                            {c.description}
-                          </div>
-                        )}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {matchedClients.length > 0 && (
-                <div className="space-y-2">
-                  <div className="text-xs font-medium text-muted-foreground">
-                    Clientes ({matchedClients.length})
-                  </div>
-                  <div className="space-y-2">
-                    {matchedClients.map((c) => (
-                      <Link
-                        key={c.id}
-                        href={`/clients/${c.id}/overview`}
-                        className="block rounded-standard border border-border p-3 hover:bg-muted/40"
-                      >
-                        <div className="text-sm font-medium">
-                          {[c.first_name, c.last_name].filter(Boolean).join(" ") || "(sin nombre)"}
+                    {matchedCases.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="text-xs font-medium text-muted-foreground">
+                          Casos ({matchedCases.length})
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {[c.email, c.document].filter(Boolean).join(" · ")}
+                        <div className="space-y-2">
+                          {matchedCases.map((c) => (
+                            <Link
+                              key={c.id}
+                              href={`/cases/${c.id}/overview`}
+                              className="block rounded-standard border border-border p-3 hover:bg-muted/40"
+                            >
+                              <div className="text-sm font-medium">{c.title}</div>
+                              {c.description && (
+                                <div className="text-xs text-muted-foreground line-clamp-2">
+                                  {c.description}
+                                </div>
+                              )}
+                            </Link>
+                          ))}
                         </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+                      </div>
+                    )}
+
+                    {matchedClients.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="text-xs font-medium text-muted-foreground">
+                          Clientes ({matchedClients.length})
+                        </div>
+                        <div className="space-y-2">
+                          {matchedClients.map((c) => (
+                            <Link
+                              key={c.id}
+                              href={`/clients/${c.id}/overview`}
+                              className="block rounded-standard border border-border p-3 hover:bg-muted/40"
+                            >
+                              <div className="text-sm font-medium">
+                                {[c.first_name, c.last_name].filter(Boolean).join(" ") ||
+                                  "(sin nombre)"}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {[c.email, c.document].filter(Boolean).join(" · ")}
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                <SearchAskAi query={q} />
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -14,10 +14,15 @@ import { Button } from "@/components/ui/button";
 
 export default function HomeClient({
   counts,
+  recent,
 }: {
   counts: {
     cases: number;
     clients: number;
+  };
+  recent: {
+    cases: Array<{ id: string; title: string }>;
+    clients: Array<{ id: string; name: string }>;
   };
 }) {
   const [message, setMessage] = useState("");
@@ -123,6 +128,54 @@ export default function HomeClient({
           <Button asChild variant="outline" className="justify-start">
             <Link href="/draft">Redactor</Link>
           </Button>
+        </motion.div>
+
+        {/* Recent */}
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22, duration: 0.35 }}
+        >
+          <div className="rounded-standard border border-border p-3">
+            <div className="text-xs font-medium text-muted-foreground mb-2">Recientes — Asuntos</div>
+            {recent.cases.length === 0 ? (
+              <div className="text-xs text-muted-foreground">Sin asuntos todavía.</div>
+            ) : (
+              <div className="space-y-1">
+                {recent.cases.map((c) => (
+                  <Link
+                    key={c.id}
+                    href={`/cases/${c.id}/overview`}
+                    className="block text-sm truncate hover:underline"
+                    title={c.title}
+                  >
+                    {c.title}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-standard border border-border p-3">
+            <div className="text-xs font-medium text-muted-foreground mb-2">Recientes — Clientes</div>
+            {recent.clients.length === 0 ? (
+              <div className="text-xs text-muted-foreground">Sin clientes todavía.</div>
+            ) : (
+              <div className="space-y-1">
+                {recent.clients.map((c) => (
+                  <Link
+                    key={c.id}
+                    href={`/clients/${c.id}/overview`}
+                    className="block text-sm truncate hover:underline"
+                    title={c.name}
+                  >
+                    {c.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </motion.div>
 
         {/* Nota breve */}

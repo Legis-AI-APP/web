@@ -1,7 +1,6 @@
 "use client";
 
 import type { Case } from "@/lib/cases-service";
-import type { LegisFile } from "@/lib/legis-file";
 
 import ScopedChatWorkspace from "@/components/ScopedChatWorkspace";
 import CaseDetailPanel from "@/components/CaseDetailPanel";
@@ -9,21 +8,22 @@ import EntitySubnav from "@/components/EntitySubnav";
 
 export default function CasePage({
   oldCase,
-  files: _files,
+  clientName,
   initialPanelTab,
   contextLabel,
+  rightPanelContent,
 }: {
   oldCase: Case;
-  files: LegisFile[];
+  clientName?: string;
   initialPanelTab?: "movements" | "documents" | "dates" | "notes";
   contextLabel?: string;
+  rightPanelContent?: React.ReactNode;
 }) {
-  void _files;
 
   const caseData = {
     id: oldCase.id,
     title: oldCase.title,
-    clientName: oldCase.client_id ? `Cliente (${oldCase.client_id})` : "Cliente",
+    clientName: clientName ?? (oldCase.client_id ? `Cliente (${oldCase.client_id})` : "Cliente"),
     status: oldCase.status,
     partyA: "",
     partyB: "",
@@ -54,14 +54,18 @@ export default function CasePage({
                 ]}
               />
             </div>
-            <div className="flex-1 min-h-0">
-              <CaseDetailPanel
-                mode="sidebar"
-                isOpen={true}
-                onClose={() => {}}
-                caseData={caseData}
-                initialTab={initialPanelTab}
-              />
+            <div className="flex-1 min-h-0 overflow-auto">
+              {rightPanelContent ? (
+                <div className="p-4">{rightPanelContent}</div>
+              ) : (
+                <CaseDetailPanel
+                  mode="sidebar"
+                  isOpen={true}
+                  onClose={() => {}}
+                  caseData={caseData}
+                  initialTab={initialPanelTab}
+                />
+              )}
             </div>
           </div>
         }

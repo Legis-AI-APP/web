@@ -16,10 +16,12 @@ export default function ClientPage({
   client,
   files,
   contextLabel,
+  rightPanelContent,
 }: {
   client: Client;
   files: LegisFile[];
   contextLabel?: string;
+  rightPanelContent?: React.ReactNode;
 }) {
   // Persons
   const [persons, setPersons] = useState<ClientPersonDto[]>([]);
@@ -45,8 +47,9 @@ export default function ClientPage({
   );
 
   useEffect(() => {
+    if (rightPanelContent) return;
     void refreshPersons();
-  }, [refreshPersons]);
+  }, [refreshPersons, rightPanelContent]);
 
   // Cases associated to client
   const [cases, setCases] = useState<Case[]>([]);
@@ -79,8 +82,9 @@ export default function ClientPage({
   );
 
   useEffect(() => {
+    if (rightPanelContent) return;
     void refreshCases();
-  }, [refreshCases]);
+  }, [refreshCases, rightPanelContent]);
 
   const rightPanel = (
     <div className="h-full flex flex-col">
@@ -97,10 +101,16 @@ export default function ClientPage({
         />
       </div>
 
-      <div className="flex-1 min-h-0">
-        <ClientManagementPanel client={client} persons={persons} files={files} cases={cases} />
-        {(personsLoading || casesLoading) && (
-          <div className="px-4 pb-4 text-xs text-muted-foreground">Actualizando…</div>
+      <div className="flex-1 min-h-0 overflow-auto">
+        {rightPanelContent ? (
+          <div className="p-4">{rightPanelContent}</div>
+        ) : (
+          <>
+            <ClientManagementPanel client={client} persons={persons} files={files} cases={cases} />
+            {(personsLoading || casesLoading) && (
+              <div className="px-4 pb-4 text-xs text-muted-foreground">Actualizando…</div>
+            )}
+          </>
         )}
       </div>
     </div>

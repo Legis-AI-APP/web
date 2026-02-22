@@ -173,6 +173,7 @@ export default function DraftEditor({
   const [aiChatId, setAiChatId] = useState<string | null>(null);
 
   const canPersist = Boolean(storageKey);
+  const aiChatStorageKey = storageKey ? `${storageKey}:aiChatId` : null;
 
   const load = useMemo(
     () => () => {
@@ -253,7 +254,15 @@ export default function DraftEditor({
 
   useEffect(() => {
     load();
-  }, [load]);
+
+    if (!aiChatStorageKey) return;
+    try {
+      const raw = localStorage.getItem(aiChatStorageKey);
+      if (raw) setAiChatId(raw);
+    } catch {
+      // ignore
+    }
+  }, [aiChatStorageKey, load]);
 
   useEffect(() => {
     if (!storageKey) return;
@@ -318,9 +327,18 @@ export default function DraftEditor({
       if (!res.ok) throw new Error("No se pudo crear el chat para IA");
       const json = (await res.json()) as { chat_id: string };
       setAiChatId(json.chat_id);
+
+      if (aiChatStorageKey) {
+        try {
+          localStorage.setItem(aiChatStorageKey, json.chat_id);
+        } catch {
+          // ignore
+        }
+      }
+
       return json.chat_id;
     },
-    [aiChatId, createChatPath]
+    [aiChatId, aiChatStorageKey, createChatPath]
   );
 
   const placeholderMap = useMemo(() => {
@@ -384,6 +402,11 @@ export default function DraftEditor({
     [placeholderMap]
   );
 
+  const seededTemplate = useMemo(() => {
+    if (!selectedTemplate) return "";
+    return renderTemplate(selectedTemplate.templateText);
+  }, [renderTemplate, selectedTemplate]);
+
   const generateWithAi = useMemo(
     () => async () => {
       if (!askEndpoint) return;
@@ -396,8 +419,6 @@ export default function DraftEditor({
       try {
         const chatId = await ensureAiChat();
 
-        const seeded = renderTemplate(selectedTemplate.templateText);
-
         const prompt = [
           "Sos un asistente legal para abogados en Argentina.",
           "IMPORTANTE: no inventes hechos ni normas; usá placeholders si faltan datos.",
@@ -406,7 +427,7 @@ export default function DraftEditor({
           selectedTemplate.systemInstruction,
           "",
           "PLANTILLA (con placeholders a completar):",
-          seeded,
+          seededTemplate,
           "",
           "Tareas:",
           "1) Completá la plantilla con el mejor texto posible usando la info disponible.",
@@ -431,7 +452,7 @@ export default function DraftEditor({
         setAiLoading(false);
       }
     },
-    [askEndpoint, ensureAiChat, renderTemplate, selectedTemplate]
+    [askEndpoint, ensureAiChat, seededTemplate, selectedTemplate]
   );
 
   return (
@@ -554,6 +575,12 @@ export default function DraftEditor({
             rows={3}
           />
 
+          {missingRequiredForTemplate.length > 0 ? (
+            <div className="text-xs text-muted-foreground">
+              Para usar IA en este template faltan: {missingRequiredForTemplate.join(", ")}.
+            </div>
+          ) : null}
+
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"
@@ -666,6 +693,32 @@ export default function DraftEditor({
           </div>
         </CardContent>
       </Card>
+
+      {selectedTemplate ? (
+        <Card className="border-0" style={{ boxShadow: "none" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Plantilla</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="text-xs text-muted-foreground">
+              Vista previa de la plantilla con datos disponibles (lo que falte queda como placeholder).
+            </div>
+            <Textarea value={seededTemplate} readOnly rows={10} />
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setResult(seededTemplate);
+                  toast.success("Plantilla insertada en el borrador");
+                }}
+              >
+                Insertar plantilla
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card className="border-0" style={{ boxShadow: "none" }}>
         <CardHeader className="pb-2">

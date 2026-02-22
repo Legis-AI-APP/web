@@ -213,14 +213,25 @@ export default function ScopedChatWorkspace({
 
       // Canonical behavior:
       // - if URL has chatId -> follow it
+      // - else if we have chats -> restore last chat for this scope (if any)
       // - else if we have chats -> redirect to first chat (deep-link)
       // - else -> stay without chatId until user creates one
       if (fromUrl) {
         setChatId(fromUrl);
       } else if (json.length > 0) {
-        const first = json[0]!.id;
-        setChatId(first);
-        router.replace(`${scopeBasePath}?chatId=${first}`);
+        let preferred: string | null = null;
+
+        try {
+          preferred = window.localStorage.getItem(`legis.scopedWorkspace.lastChatId:${scopeBasePath}`);
+        } catch {
+          // ignore
+        }
+
+        const fallback = json[0]!.id;
+        const next = preferred && json.some((c) => c.id === preferred) ? preferred : fallback;
+
+        setChatId(next);
+        router.replace(`${scopeBasePath}?chatId=${next}`);
       }
     } finally {
       setLoadingChats(false);
@@ -337,8 +348,16 @@ export default function ScopedChatWorkspace({
   }, [searchParams, chatId]);
 
   useEffect(() => {
-    if (chatId) void loadChatHistory(chatId);
-  }, [chatId, loadChatHistory]);
+    if (!chatId) return;
+
+    try {
+      window.localStorage.setItem(`legis.scopedWorkspace.lastChatId:${scopeBasePath}`, chatId);
+    } catch {
+      // ignore
+    }
+
+    void loadChatHistory(chatId);
+  }, [chatId, loadChatHistory, scopeBasePath]);
 
   const ChatsList = (
     <div className="h-full flex flex-col">
