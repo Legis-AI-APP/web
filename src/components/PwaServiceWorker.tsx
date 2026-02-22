@@ -19,14 +19,16 @@ export default function PwaServiceWorker() {
             action: {
               label: "Actualizar",
               onClick: async () => {
+                // When the new SW takes control, reload to get fresh assets.
+                const onControllerChange = () => window.location.reload();
+                navigator.serviceWorker.addEventListener("controllerchange", onControllerChange, {
+                  once: true,
+                });
+
                 try {
                   reg.waiting?.postMessage({ type: "SKIP_WAITING" });
-                } finally {
-                  // When the new SW takes control, reload to get fresh assets.
-                  const onControllerChange = () => window.location.reload();
-                  navigator.serviceWorker.addEventListener("controllerchange", onControllerChange, {
-                    once: true,
-                  });
+                } catch {
+                  // ignore
                 }
               },
             },
