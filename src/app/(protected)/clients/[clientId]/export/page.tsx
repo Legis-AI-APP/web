@@ -40,6 +40,7 @@ export default async function Page({
       client={client}
       files={[]}
       contextLabel="Export"
+      rightPanelPadding={false}
       rightPanelContent={
         <div className="print-page max-w-3xl mx-auto space-y-6">
           <div className="print-hide flex items-center justify-end gap-3">

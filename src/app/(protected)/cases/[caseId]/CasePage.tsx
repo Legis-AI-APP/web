@@ -12,12 +12,14 @@ export default function CasePage({
   initialPanelTab,
   contextLabel,
   rightPanelContent,
+  rightPanelPadding = true,
 }: {
   oldCase: Case;
   clientName?: string;
   initialPanelTab?: "movements" | "documents" | "dates" | "notes";
   contextLabel?: string;
   rightPanelContent?: React.ReactNode;
+  rightPanelPadding?: boolean;
 }) {
 
   const caseData = {
@@ -56,7 +58,11 @@ export default function CasePage({
             </div>
             <div className="flex-1 min-h-0 overflow-auto">
               {rightPanelContent ? (
-                <div className="p-4">{rightPanelContent}</div>
+                rightPanelPadding ? (
+                  <div className="p-4">{rightPanelContent}</div>
+                ) : (
+                  rightPanelContent
+                )
               ) : (
                 <CaseDetailPanel
                   mode="sidebar"
