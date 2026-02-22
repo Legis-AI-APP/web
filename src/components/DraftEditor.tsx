@@ -173,6 +173,7 @@ export default function DraftEditor({
   const [aiChatId, setAiChatId] = useState<string | null>(null);
 
   const canPersist = Boolean(storageKey);
+  const aiChatStorageKey = storageKey ? `${storageKey}:aiChatId` : null;
 
   const load = useMemo(
     () => () => {
@@ -253,7 +254,15 @@ export default function DraftEditor({
 
   useEffect(() => {
     load();
-  }, [load]);
+
+    if (!aiChatStorageKey) return;
+    try {
+      const raw = localStorage.getItem(aiChatStorageKey);
+      if (raw) setAiChatId(raw);
+    } catch {
+      // ignore
+    }
+  }, [aiChatStorageKey, load]);
 
   useEffect(() => {
     if (!storageKey) return;
@@ -318,9 +327,18 @@ export default function DraftEditor({
       if (!res.ok) throw new Error("No se pudo crear el chat para IA");
       const json = (await res.json()) as { chat_id: string };
       setAiChatId(json.chat_id);
+
+      if (aiChatStorageKey) {
+        try {
+          localStorage.setItem(aiChatStorageKey, json.chat_id);
+        } catch {
+          // ignore
+        }
+      }
+
       return json.chat_id;
     },
-    [aiChatId, createChatPath]
+    [aiChatId, aiChatStorageKey, createChatPath]
   );
 
   const placeholderMap = useMemo(() => {
