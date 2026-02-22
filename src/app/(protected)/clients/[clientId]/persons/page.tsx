@@ -1,5 +1,5 @@
 import ClientPage from "../ClientPage";
-import { getClient, getClientFiles } from "@/lib/clients-service";
+import { getClient } from "@/lib/clients-service";
 
 export default async function Page({
   params,
@@ -7,7 +7,8 @@ export default async function Page({
   params: Promise<{ clientId: string }>;
 }) {
   const { clientId } = await params;
-  const [client, files] = await Promise.all([getClient(clientId), getClientFiles(clientId)]);
+  const client = await getClient(clientId);
   // MVP: persons live in the right panel; route exists for deep-linking.
-  return <ClientPage client={client} files={files} contextLabel="Personas" />;
+  // Perf: avoid fetching client files server-side on this route.
+  return <ClientPage client={client} files={[]} contextLabel="Personas" />;
 }
