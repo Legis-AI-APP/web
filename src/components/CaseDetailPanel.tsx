@@ -268,7 +268,14 @@ export default function CaseDetailPanel({
                             <Card key={doc.id} className="p-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1 flex-1">
-                                        <p className="text-sm font-medium">{doc.name}</p>
+                                        <a
+                                            href={doc.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-sm font-medium hover:underline block"
+                                        >
+                                            {doc.name}
+                                        </a>
                                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                             <span>Archivo</span>
                                         </div>

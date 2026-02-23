@@ -138,6 +138,22 @@
     margin: 16mm;
   }
 
+  /* When printing via our PrintButton, hide the app chrome and print only the export container. */
+  html.print-mode body * {
+    visibility: hidden !important;
+  }
+
+  html.print-mode .print-page,
+  html.print-mode .print-page * {
+    visibility: visible !important;
+  }
+
+  html.print-mode .print-page {
+    position: absolute;
+    inset: 0;
+    max-width: none !important;
+  }
+
   /* Hide UI elements not meant for print */
   .print-hide {
     display: none !important;
