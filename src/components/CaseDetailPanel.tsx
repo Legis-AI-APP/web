@@ -488,7 +488,7 @@ export default function CaseDetailPanel({
                     exit={{ x: "-100%" }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     className="bg-background border-r shadow-xl flex flex-col h-full w-full max-w-sm"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
                 >
                     {/* Header */}
                     <div className="p-4 border-b bg-sidebar/50">
