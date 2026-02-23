@@ -13,11 +13,24 @@ export default function SearchAskAi({ query }: { query: string }) {
   const [result, setResult] = useState("");
   const [chatId, setChatId] = useState<string | null>(null);
 
-  const storageKey = "legis.search.aiChatId";
+  function normalize(s: string) {
+    return s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .trim();
+  }
+
+  const storageKey = useMemo(() => {
+    const q = normalize(query);
+    // keep key reasonably small
+    return `legis.search.aiChatId:${q.slice(0, 80)}`;
+  }, [query]);
 
   useEffect(() => {
-    // avoid showing stale suggestions for a different query
+    // avoid showing stale suggestions/context for a different query
     setResult("");
+    setChatId(null);
   }, [query]);
 
   const ensureChat = useMemo(
@@ -47,7 +60,7 @@ export default function SearchAskAi({ query }: { query: string }) {
 
       return json.chat_id;
     },
-    [chatId]
+    [chatId, storageKey]
   );
 
   const ask = useMemo(
