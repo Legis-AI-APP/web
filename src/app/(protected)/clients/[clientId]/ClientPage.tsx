@@ -17,11 +17,13 @@ export default function ClientPage({
   files,
   contextLabel,
   rightPanelContent,
+  rightPanelPadding = true,
 }: {
   client: Client;
   files: LegisFile[];
   contextLabel?: string;
   rightPanelContent?: React.ReactNode;
+  rightPanelPadding?: boolean;
 }) {
   // Persons
   const [persons, setPersons] = useState<ClientPersonDto[]>([]);
@@ -103,7 +105,11 @@ export default function ClientPage({
 
       <div className="flex-1 min-h-0 overflow-auto">
         {rightPanelContent ? (
-          <div className="p-4">{rightPanelContent}</div>
+          rightPanelPadding ? (
+            <div className="p-4">{rightPanelContent}</div>
+          ) : (
+            rightPanelContent
+          )
         ) : (
           <>
             <ClientManagementPanel client={client} persons={persons} files={files} cases={cases} />

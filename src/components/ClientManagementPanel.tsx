@@ -3,6 +3,8 @@
 import type { Client } from "@/lib/clients-service";
 import type { ClientPersonDto } from "@/lib/client-persons";
 import type { LegisFile } from "@/lib/legis-file";
+import Link from "next/link";
+
 import type { Case } from "@/lib/cases-service";
 
 import { Badge } from "@/components/ui/badge";
@@ -78,7 +80,13 @@ export default function ClientManagementPanel({
           </div>
           {cases.slice(0, 6).map((c) => (
             <div key={c.id} className="text-sm">
-              <div className="font-medium truncate" title={c.title}>{c.title}</div>
+              <Link
+                href={`/cases/${c.id}/overview`}
+                className="font-medium truncate hover:underline block"
+                title={c.title}
+              >
+                {c.title}
+              </Link>
               <div className="text-xs text-muted-foreground">{c.status}</div>
             </div>
           ))}
@@ -119,9 +127,16 @@ export default function ClientManagementPanel({
             <span>{files.length} archivos</span>
           </div>
           {files.slice(0, 6).map((f) => (
-            <div key={`${f.name}:${f.url}`} className="text-sm truncate" title={f.name}>
+            <a
+              key={`${f.name}:${f.url}`}
+              href={f.url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm truncate hover:underline block"
+              title={f.name}
+            >
               {f.name}
-            </div>
+            </a>
           ))}
           {files.length > 6 ? (
             <div className="text-xs text-muted-foreground">… +{files.length - 6} más</div>

@@ -268,7 +268,14 @@ export default function CaseDetailPanel({
                             <Card key={doc.id} className="p-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1 flex-1">
-                                        <p className="text-sm font-medium">{doc.name}</p>
+                                        <a
+                                            href={doc.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-sm font-medium hover:underline block"
+                                        >
+                                            {doc.name}
+                                        </a>
                                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                             <span>Archivo</span>
                                         </div>
@@ -481,7 +488,7 @@ export default function CaseDetailPanel({
                     exit={{ x: "-100%" }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     className="bg-background border-r shadow-xl flex flex-col h-full w-full max-w-sm"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
                 >
                     {/* Header */}
                     <div className="p-4 border-b bg-sidebar/50">
